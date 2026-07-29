@@ -9,11 +9,16 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Lets a maintainer re-validate on demand — useful after changing the tool itself, and the only
+  # way to exercise the pipeline without pushing a commit.
+  workflow_dispatch:
 
 jobs:
   check:
     name: validate
-    if: github.event_name == 'pull_request'
+    # A manual dispatch means "check the catalog", so it runs this job and not the writer — otherwise a
+    # dispatch would skip both jobs and report green having done nothing at all.
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read
