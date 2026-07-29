@@ -166,7 +166,7 @@ file list, sizes and hashes that CI computed:
       "id": "counter",
       "title": "Counter",
       "summary": "…", "kind": "app", "category": "example", "author": "Silica",
-      "needs": { "doors": ["gfx"], "parts": ["gpu"] },
+      "needs": { "doors": ["web"], "parts": ["gpu"] },
       "readme": "scripts/counter/README.md",
       "digest": "d6e2e94dcd80a5c96863fac0d8e18b4aeeb82737271c9333a0e35b5f4d04a1c2",
       "files": [

@@ -82,8 +82,10 @@ It enforces:
    `index.html` for an app;
 4. no symlinks; no dotfiles or dot-directories; no file over 262144 bytes; no entry with more than 64
    installable files; every entry-relative path at most 160 characters and 6 segments, with no `..`;
-5. `needs.doors` drawn from `redstone`, `gfx`, `fs`, `network`, `pads`; `needs.parts` from `gpu`, `hdd`,
-   `nic`; both optional, both arrays of strings when present.
+5. `needs.doors` drawn from the thirteen capability doors — `redstone`, `gfx`, `fs`, `network`, `pads`,
+   `web`, `detector`, `ejector`, `turret`, `spawn`, `security`, `geo`, `multidimensional` (the table in
+   [`README.md`](README.md#needs-precisely) says what each gates); `needs.parts` from `gpu`, `hdd`, `nic`;
+   both optional, both arrays of strings when present.
 
 Passing CI means your entry is **structurally** valid. It says nothing at all about whether the code is
 good or safe.
