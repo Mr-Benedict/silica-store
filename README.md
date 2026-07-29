@@ -199,6 +199,14 @@ node tools/build-index.mjs --write     # validate, then write index.json
 
 Node 20 or newer, standard library only. There is nothing to install.
 
+## Writing a script or app with an AI
+
+[**AI-GUIDE.md**](AI-GUIDE.md) is a complete, self-contained technical briefing on the Silica script API —
+the execution model, every global and peripheral verb, the capability doors, the events, the Path-B bridge,
+and two known-good worked examples. Paste that one file into Claude, ChatGPT or anything similar, say what
+you want the script to do, and it has everything it needs to write one that runs. It is written for a model,
+not for a human, so it is dense on purpose.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). In short: one folder under `scripts/`, a `silica.json` and a
