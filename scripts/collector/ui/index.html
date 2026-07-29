@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Collector</title>
+  <!-- Sibling files, served over silica:// alongside this page. -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="bar">
+      <span class="dot off" id="statusDot"></span>
+      <h1 id="title">Collector</h1>
+      <span class="sub" id="sub"></span>
+    </header>
+
+    <section id="offline" class="offline">
+      <p id="offlineMsg">Searching for a collector…</p>
+    </section>
+
+    <section id="live" class="live hidden">
+      <ul id="list" class="list"></ul>
+      <!-- The only scrolling that works on every surface: a wall screen forwards no wheel event. -->
+      <div class="pager">
+        <button class="pg" type="button" id="lUp">&#9650;</button>
+        <span class="pgpos" id="lPos">0/0</span>
+        <button class="pg" type="button" id="lDn">&#9660;</button>
+      </div>
+    </section>
+  </main>
+  <script src="client.js"></script>
+</body>
+</html>

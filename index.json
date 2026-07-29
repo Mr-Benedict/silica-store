@@ -1,0 +1,682 @@
+{
+  "version": 1,
+  "name": "Silica Store",
+  "generated": "2026-07-29T21:48:54Z",
+  "entries": [
+    {
+      "id": "01-welcome",
+      "title": "01 Welcome — Self-Test",
+      "summary": "Self-test: which capability doors are open, which part each closed one wants, what is on the network, and what to run next",
+      "kind": "script",
+      "category": "starter",
+      "author": "Silica",
+      "needs": {
+        "doors": [],
+        "parts": []
+      },
+      "readme": "scripts/01-welcome/README.md",
+      "digest": "fa3ba1a3aeadf2c923dbe7a1189430e18c81590dd454ee43253867130bcc7e86",
+      "files": [
+        {
+          "path": "01-welcome.js",
+          "sha256": "39211ab50513bd0cf4b3a4a7cb0e65928138231ac4368a2346ef4539d59401ef",
+          "bytes": 5114
+        }
+      ]
+    },
+    {
+      "id": "02-lamp",
+      "title": "02 Lamp — Redstone Pulser",
+      "summary": "Redstone pulser: drives one face on and off forever, on a period you set",
+      "kind": "script",
+      "category": "starter",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "redstone"
+        ],
+        "parts": []
+      },
+      "readme": "scripts/02-lamp/README.md",
+      "digest": "3bf9af4297623d102b89ce3d9c55b88ef4ad6603fa4421c7593b227983717dd8",
+      "files": [
+        {
+          "path": "02-lamp.js",
+          "sha256": "2a4c3014df8efeb59790ab9b5e74b59de67ec19be4ab1487b2667db614c4559a",
+          "bytes": 3256
+        }
+      ]
+    },
+    {
+      "id": "03-latch",
+      "title": "03 Latch — Redstone Toggle",
+      "summary": "Redstone toggle: a pulse in flips an output that stays flipped until the next pulse",
+      "kind": "script",
+      "category": "starter",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "redstone",
+          "fs"
+        ],
+        "parts": []
+      },
+      "readme": "scripts/03-latch/README.md",
+      "digest": "e7f1ac262ed1a0ebee8400dc9d55777cd3c379a4760b68ca7a8998e8b6eedc8b",
+      "files": [
+        {
+          "path": "03-latch.js",
+          "sha256": "1e7257f11f788ea5afb095281abf4d5ac52a818b33d6fcbc12ce0afc8f6818f8",
+          "bytes": 3444
+        }
+      ]
+    },
+    {
+      "id": "04-devices",
+      "title": "04 Devices — Network Browser",
+      "summary": "Network browser: every reachable device, its kind, its energy and its inventory, reprinted only when something changes",
+      "kind": "script",
+      "category": "starter",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "network"
+        ],
+        "parts": [
+          "nic"
+        ]
+      },
+      "readme": "scripts/04-devices/README.md",
+      "digest": "203bc0d1b221e3a805e6f8a23bf0c257d63858b05726a54c0e463fb7ab9fb280",
+      "files": [
+        {
+          "path": "04-devices.js",
+          "sha256": "5ca09af8d88dfee7937f523b5a9dcb5b219b602d8fbcf5b01155115f3df7b5e2",
+          "bytes": 5072
+        }
+      ]
+    },
+    {
+      "id": "05-power",
+      "title": "05 Power — Energy Gauge and Alarm",
+      "summary": "Energy gauge and low-power alarm on a labelled device, with a hysteresis gap so a backup generator cannot chatter",
+      "kind": "script",
+      "category": "starter",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "redstone",
+          "network"
+        ],
+        "parts": [
+          "nic"
+        ]
+      },
+      "readme": "scripts/05-power/README.md",
+      "digest": "754fe045f4cf6a026b604b50626a151e51631b984ce8265a3689bb860f93dac4",
+      "files": [
+        {
+          "path": "05-power.js",
+          "sha256": "09ee514984a9cb825ca3d6af4b20ec6e22015a9749e8107da4ff9599ff64c138",
+          "bytes": 5441
+        }
+      ]
+    },
+    {
+      "id": "06-mover",
+      "title": "06 Mover — Item Shuttle",
+      "summary": "Moves items between two labelled devices, on a timer or on a redstone pulse, with an optional item filter",
+      "kind": "script",
+      "category": "starter",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "redstone",
+          "network"
+        ],
+        "parts": [
+          "nic"
+        ]
+      },
+      "readme": "scripts/06-mover/README.md",
+      "digest": "eb4cda74e1025e3f539d9ef1cbe9b332618fa676350dc4a957aa89e8f0517515",
+      "files": [
+        {
+          "path": "06-mover.js",
+          "sha256": "2dd0b384b7e89b7e9f43b9596d7b1338fc0abeeec1ea4b5af4f5cc0124c0c395",
+          "bytes": 5350
+        }
+      ]
+    },
+    {
+      "id": "07-alarm",
+      "title": "07 Alarm — Proximity Alarm",
+      "summary": "Proximity alarm: watches an Entity Detector and holds a redstone face live while something is inside your trip distance",
+      "kind": "script",
+      "category": "starter",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "redstone",
+          "network",
+          "detector"
+        ],
+        "parts": [
+          "nic"
+        ]
+      },
+      "readme": "scripts/07-alarm/README.md",
+      "digest": "da672619013c57b161b60ab81f6765778a4b162ee4f9b67676b0a6431d8899af",
+      "files": [
+        {
+          "path": "07-alarm.js",
+          "sha256": "21664a76aaf8085569f04e8957e8b9d815f7cdd959ce5245e50689dc5d78d5f6",
+          "bytes": 5961
+        }
+      ]
+    },
+    {
+      "id": "08-beacon",
+      "title": "08 Beacon — Computer to Computer",
+      "summary": "Two computers talking: heartbeats, a link light, and a beat count that survives a restart",
+      "kind": "script",
+      "category": "starter",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "fs",
+          "network"
+        ],
+        "parts": [
+          "nic"
+        ]
+      },
+      "readme": "scripts/08-beacon/README.md",
+      "digest": "3beb5e9f43f50c61f775c427f482cd193d08de57c3653e8dcaf0b6bbcfa70161",
+      "files": [
+        {
+          "path": "08-beacon.js",
+          "sha256": "b248717c74da46a4421356377098b1b88081a17cfa632a75ffb12a9f9dc1b5d4",
+          "bytes": 5226
+        }
+      ]
+    },
+    {
+      "id": "builder-control",
+      "title": "Builder Control",
+      "summary": "RFTools Builder control room: quarry and shape status, progress and yield, and the controls to run it",
+      "kind": "app",
+      "category": "automation",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "network",
+          "web"
+        ],
+        "parts": [
+          "gpu",
+          "nic"
+        ],
+        "mods": [
+          "rftoolsbuilder"
+        ]
+      },
+      "readme": "scripts/builder-control/README.md",
+      "digest": "0771e159043cf589c8db400a5e79e7a1692373d7d01f27d0153693b959a94872",
+      "files": [
+        {
+          "path": "entrypoint.js",
+          "sha256": "a9262b4a64e8820d11878c9cf14585b144df3b86cbf97a20ad995b3c4db3d21d",
+          "bytes": 35723
+        },
+        {
+          "path": "ui/client.js",
+          "sha256": "20ac15942a122039fbccdd8dc2d02db1d19f8c7566a36d00996520e39a407dc0",
+          "bytes": 28833
+        },
+        {
+          "path": "ui/index.html",
+          "sha256": "7d6247846cfacd9cf94a8d8163a62409a012e33b7820bc5047ed0339def94f1f",
+          "bytes": 10648
+        },
+        {
+          "path": "ui/style.css",
+          "sha256": "ea7005ccbb13aaf29891db43c21cad00ebe9bdcda29773ae4f99d1875c2c73fb",
+          "bytes": 21753
+        }
+      ]
+    },
+    {
+      "id": "collector",
+      "title": "Collector",
+      "summary": "Item Collector board: buffer contents, collection range and filter",
+      "kind": "app",
+      "category": "automation",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "network",
+          "web"
+        ],
+        "parts": [
+          "gpu",
+          "nic"
+        ]
+      },
+      "readme": "scripts/collector/README.md",
+      "digest": "4cd0b69cf579650c24d718cab4db2dd567c19a805b114b844b5c6e64d5658770",
+      "files": [
+        {
+          "path": "entrypoint.js",
+          "sha256": "fdaf45e6d8ef11090c0a6db0ede1b0b13e71b62c071353c1fe2b9a79627e2367",
+          "bytes": 7762
+        },
+        {
+          "path": "ui/client.js",
+          "sha256": "45fcbf5b8917e2e5764140cb29d9ae1b920727eaed41dff7db6b2ceac8676c85",
+          "bytes": 6702
+        },
+        {
+          "path": "ui/index.html",
+          "sha256": "fbbb7adab3c12ab7449a29c199eab07ec5a9f8d98972e35711f28fdfb8d635af",
+          "bytes": 1080
+        },
+        {
+          "path": "ui/style.css",
+          "sha256": "bcdbe06cd617241b18866692265151a9f5010e16e16bb0caf93cd4c49d87d859",
+          "bytes": 3750
+        }
+      ]
+    },
+    {
+      "id": "counter",
+      "title": "Counter",
+      "summary": "The smallest complete Path-B app: a number, three buttons, and the whole web bridge in one screen",
+      "kind": "app",
+      "category": "example",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "web"
+        ],
+        "parts": [
+          "gpu"
+        ]
+      },
+      "readme": "scripts/counter/README.md",
+      "digest": "d6e2e94dcd80a5c96863fac0d8e18b4aeeb82737271c9333a0e35b5f4d04a1c2",
+      "files": [
+        {
+          "path": "entrypoint.js",
+          "sha256": "ddbcff721b1a9da67820ee7e4e17e650e762d02292e6e640e2e71e93161a6e81",
+          "bytes": 1567
+        },
+        {
+          "path": "ui/client.js",
+          "sha256": "dd4376639d48b122334c145dbf01d0c595080a2793b6f934b528f5d4748235e0",
+          "bytes": 1678
+        },
+        {
+          "path": "ui/index.html",
+          "sha256": "e94191f741ea092f424354660dd4cc223b8906097280ec0c2a24c88f41beaa1a",
+          "bytes": 703
+        },
+        {
+          "path": "ui/style.css",
+          "sha256": "90bf4789bd7ace7813a80d7d8133bdf491a8dc6409c209760590406a606c33a4",
+          "bytes": 1881
+        }
+      ]
+    },
+    {
+      "id": "detector",
+      "title": "Detector — Perimeter Watch",
+      "summary": "Entity Detector watch board: a radar sweep, a contact list, and an armable redstone alert",
+      "kind": "app",
+      "category": "security",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "redstone",
+          "network",
+          "web",
+          "detector"
+        ],
+        "parts": [
+          "gpu",
+          "nic"
+        ]
+      },
+      "readme": "scripts/detector/README.md",
+      "digest": "ec93749dbe8817015ec128a2742cec9ccc3f4f68f739ce642db6b9b1395a680d",
+      "files": [
+        {
+          "path": "entrypoint.js",
+          "sha256": "649433225c950b457aac1a1350ac08b920387d9c1e311b911d4bddd489a1246f",
+          "bytes": 37969
+        },
+        {
+          "path": "ui/client.js",
+          "sha256": "467baf0fb1bc9a9e27afd6f6fc704ccb98830d9f9c177b5d8a928797bea270c0",
+          "bytes": 28569
+        },
+        {
+          "path": "ui/index.html",
+          "sha256": "cf7cacea48a8e6e9f98f72a1d21b5f79aa2bd0c2620895052438e7d50106dc00",
+          "bytes": 8602
+        },
+        {
+          "path": "ui/style.css",
+          "sha256": "e4b4769ca7b659350d2f7026bc20507548798a6408fa44a572863b250deee242",
+          "bytes": 22378
+        }
+      ]
+    },
+    {
+      "id": "ejector",
+      "title": "Ejector",
+      "summary": "Item Ejector board: buffer contents, filter, and a manual eject button",
+      "kind": "app",
+      "category": "automation",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "network",
+          "web",
+          "ejector"
+        ],
+        "parts": [
+          "gpu",
+          "nic"
+        ]
+      },
+      "readme": "scripts/ejector/README.md",
+      "digest": "a8e547e2673f53d5e9953250443d0412c250fbd32e3b0ddec0fb5cab19b07fd9",
+      "files": [
+        {
+          "path": "entrypoint.js",
+          "sha256": "a0d94f44fb59cefdd6557bcffde222a4cbf794e1c265e539161cd032469cc4e0",
+          "bytes": 13745
+        },
+        {
+          "path": "ui/client.js",
+          "sha256": "dcb32a3f15dfbb2e3009efd74de2be322d15e374bc0af5d2554ae2cc68aa0e46",
+          "bytes": 10803
+        },
+        {
+          "path": "ui/index.html",
+          "sha256": "700edc43e7c6768262dff36a8af6179e3c9490b7d045d079f979a2e969056492",
+          "bytes": 2567
+        },
+        {
+          "path": "ui/style.css",
+          "sha256": "d896aa8557e55e1a69583adc19bdb7abd0eb072573c5eae0220f06d14c6a4653",
+          "bytes": 7176
+        }
+      ]
+    },
+    {
+      "id": "geo-prospector",
+      "title": "Geo Prospector",
+      "summary": "Geo Scanner survey room: veins ranked by scarcity, ore per Y level, and a shaft advisor",
+      "kind": "app",
+      "category": "mining",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "network",
+          "web",
+          "geo"
+        ],
+        "parts": [
+          "gpu",
+          "nic"
+        ]
+      },
+      "readme": "scripts/geo-prospector/README.md",
+      "digest": "7ea6cb497afba1f712d0acaf190c82e50fa5b466f3dbc108984d9598f2f0cecb",
+      "files": [
+        {
+          "path": "entrypoint.js",
+          "sha256": "ba8086bf682c5dcaa699f7f281c92dc58de649280c5f46b8d07eb333006db83a",
+          "bytes": 71769
+        },
+        {
+          "path": "ui/client.js",
+          "sha256": "d56968c5fa6aac4afe4fd0cceb3140f9002682e9aab548f5224656032b67c465",
+          "bytes": 48067
+        },
+        {
+          "path": "ui/index.html",
+          "sha256": "ce0dbb7eb84328ddf739fa7dc0bc0fa054ab3e5322c606de88d542292471eeec",
+          "bytes": 12726
+        },
+        {
+          "path": "ui/style.css",
+          "sha256": "673558283dda701056fb4f7e3fee834f576af2d021bf682e38c224d6205a90f4",
+          "bytes": 25468
+        }
+      ]
+    },
+    {
+      "id": "keycard",
+      "title": "Keycard Access Control",
+      "summary": "Keycard readers and secure doors: a roster, an access log, and remote unlock",
+      "kind": "app",
+      "category": "security",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "network",
+          "web",
+          "security"
+        ],
+        "parts": [
+          "gpu",
+          "nic"
+        ]
+      },
+      "readme": "scripts/keycard/README.md",
+      "digest": "b312f62b8a7da85e1ef37e64ae59cfb780f9d6930a77f590750982ab4acc3d5e",
+      "files": [
+        {
+          "path": "entrypoint.js",
+          "sha256": "ab9b82d9280062553a4ee3e6cb5273a849f616f9dface722985eff7beb5c102d",
+          "bytes": 22386
+        },
+        {
+          "path": "ui/client.js",
+          "sha256": "a93f441cd2630065f773756b50adde79b8efe129b46c3644e6aab642f2b25dad",
+          "bytes": 17424
+        },
+        {
+          "path": "ui/index.html",
+          "sha256": "ce4f720b51b21014b77c67e17d8e5728399620477ae1a5ec72b0d9c990780e27",
+          "bytes": 6965
+        },
+        {
+          "path": "ui/style.css",
+          "sha256": "35f8f03d073c42d7250cfc50a4341af8bc3ab7b4d43f324dc733d1562e174744",
+          "bytes": 20588
+        }
+      ]
+    },
+    {
+      "id": "reactor-control",
+      "title": "Reactor Control",
+      "summary": "Mekanism fission control room: interlocks, burn presets, and the fuel and waste runway",
+      "kind": "app",
+      "category": "energy",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "network",
+          "web"
+        ],
+        "parts": [
+          "gpu",
+          "nic"
+        ],
+        "mods": [
+          "mekanism"
+        ]
+      },
+      "readme": "scripts/reactor-control/README.md",
+      "digest": "dd69a0a87bbe9bcd979144dc380c39144742e4c0ddc502165c17a8f8b8da9fc4",
+      "files": [
+        {
+          "path": "entrypoint.js",
+          "sha256": "9163c20ffcec3c8da646ed809dc917996e63d09d463122eba99c0cbbc544098b",
+          "bytes": 42241
+        },
+        {
+          "path": "ui/client.js",
+          "sha256": "30d1d6f0c4c515492bc2c92d5ffe3728ffba78ebc95b269f15e5dcd4846f2baf",
+          "bytes": 22914
+        },
+        {
+          "path": "ui/index.html",
+          "sha256": "bd3bf2c1f56849b3056d236ff2ddab954db0d7865b36a43a5982763a1ccd7a1b",
+          "bytes": 12251
+        },
+        {
+          "path": "ui/style.css",
+          "sha256": "0e458260947f57cb438655b453b37e9b21bd17a21e433ec3b743c33fc0e2ab32",
+          "bytes": 20206
+        }
+      ]
+    },
+    {
+      "id": "rftp-grid",
+      "title": "RFTools Power Grid",
+      "summary": "RFTools Power grid monitor: network-wide energy and live flow, across dimensions",
+      "kind": "app",
+      "category": "energy",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "network",
+          "web"
+        ],
+        "parts": [
+          "gpu",
+          "nic"
+        ],
+        "mods": [
+          "rftoolspower"
+        ]
+      },
+      "readme": "scripts/rftp-grid/README.md",
+      "digest": "820c605703f8e4a590469915e86bcacf1677fe7e45381bb42fa4bf4671e342f9",
+      "files": [
+        {
+          "path": "entrypoint.js",
+          "sha256": "6fcf95a5d6c2e250439168a99ca73cc88649fcd4f9e802fd2f5e415a9cd0e3f4",
+          "bytes": 15249
+        },
+        {
+          "path": "ui/client.js",
+          "sha256": "7209b2880fc5f7c300fafcd22702a1a02e8013fb8ec132db3af49b80a200729b",
+          "bytes": 19399
+        },
+        {
+          "path": "ui/index.html",
+          "sha256": "c2f26d6dc32da449399af95bb9875268d18c1cb92b83ae6f0efda78243dd70c9",
+          "bytes": 2460
+        },
+        {
+          "path": "ui/style.css",
+          "sha256": "72b31acfb4bf093e851d6f69d6f87db106df8409b184219d9d0622586cf232da",
+          "bytes": 9365
+        }
+      ]
+    },
+    {
+      "id": "rs-terminal",
+      "title": "Refined Storage Terminal",
+      "summary": "Refined Storage grid terminal: items, fluids and crafting tasks",
+      "kind": "app",
+      "category": "storage",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "network",
+          "web"
+        ],
+        "parts": [
+          "gpu",
+          "nic"
+        ],
+        "mods": [
+          "refinedstorage"
+        ]
+      },
+      "readme": "scripts/rs-terminal/README.md",
+      "digest": "1c23df26e098b11c87704cef255486240987349ac0b3a25e3529b1a4b2dc63a4",
+      "files": [
+        {
+          "path": "entrypoint.js",
+          "sha256": "484bdcb03883d054a9fcc9493e67c7a2f3bfee6eb29996a0a54f777f6fba09bf",
+          "bytes": 15743
+        },
+        {
+          "path": "ui/client.js",
+          "sha256": "3239d51312e2c0d25d569c8eeeeb2ac895c487b64d47a50af671aba5343f7dac",
+          "bytes": 26294
+        },
+        {
+          "path": "ui/index.html",
+          "sha256": "a45a81ca8f49134fb1dc7c28c70a60b22f5e7f9e78329e243a24b573bbc2bd04",
+          "bytes": 4711
+        },
+        {
+          "path": "ui/style.css",
+          "sha256": "2e8e55512eac784800823c60114579f81b0a339486d83d6d05b6bcab0cbfe046",
+          "bytes": 28569
+        }
+      ]
+    },
+    {
+      "id": "stock-display",
+      "title": "Stock Display",
+      "summary": "What is in any inventory on the Silica network, by name, with tag filters and a full slot inspector",
+      "kind": "app",
+      "category": "storage",
+      "author": "Silica",
+      "needs": {
+        "doors": [
+          "network",
+          "web"
+        ],
+        "parts": [
+          "gpu",
+          "nic"
+        ]
+      },
+      "readme": "scripts/stock-display/README.md",
+      "digest": "9abad3a5c59d6d88f1c532d009a28c0a06c412ed474a21e36511784d24e51853",
+      "files": [
+        {
+          "path": "entrypoint.js",
+          "sha256": "3fd9639ef2ffa593d81fb8347e833b880222a649398810b8fe423af28de5e62f",
+          "bytes": 20458
+        },
+        {
+          "path": "ui/client.js",
+          "sha256": "a23d1e9a73dba6913fcb5f24fcbb51f0adc326f658c9f14ed959b99e9e7d2f08",
+          "bytes": 25518
+        },
+        {
+          "path": "ui/index.html",
+          "sha256": "b72d2296a517d920ca0ae556293a3822a82df5e9f81dd6183ca7098e0e9d1e06",
+          "bytes": 9185
+        },
+        {
+          "path": "ui/style.css",
+          "sha256": "9bbcd5411e64826da2f22fb449477440ed82c8a8889a35769de969cbb0f70daf",
+          "bytes": 21977
+        }
+      ]
+    }
+  ]
+}

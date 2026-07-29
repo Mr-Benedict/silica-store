@@ -1,0 +1,459 @@
+/* rs-terminal/ui/style.css — Silica "console" theme, shared language with rftp-grid / collector / mek-plant
+   (deep charcoal, glowing teal signal, amber/red severity). System fonts only (CSP blocks external hosts);
+   every glow is a CSS box-shadow. Item/pattern/task chips carry their own per-resource hue (set inline in
+   client.js). Two-column layout collapses to one column on narrow viewports — no horizontal scroll.
+
+   SIZE IS THE HARD PART. This page has to render both in a computer's full-window GUI and on a wall
+   screen, whose browser is `[screens] browserResolution` CSS px wide by three quarters of that tall — a
+   CLIENT performance knob spanning 128..2048, so a 16x range and no size to target. Width is handled by
+   the stack breakpoint below; HEIGHT is handled by the tiered `max-height` queries at the bottom of the
+   file, which compact the chrome so the item list keeps most of the screen. Read those before adding
+   anything with a fixed height. */
+
+:root {
+  --bg0:    #10141a;
+  --bg1:    #171c24;
+  --panel:  #1b212b;
+  --panel2: #222a35;
+  --inset:  #12161c;
+  --line:   #2b323c;
+  --line2:  #39424f;
+  --ink:    #e8ecf1;
+  --silver: #c6ccd3;
+  --dim:    #8790a0;
+  --signal: #4fd6c0;
+  --teal-dk:#1e6b5e;
+  --amber:  #f5b942;
+  --crit:   #e8604e;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; height: 100%;
+  background:
+    radial-gradient(140% 90% at 50% -10%, #202a38 0%, var(--bg0) 60%),
+    var(--bg0);
+  color: var(--silver);
+  -webkit-user-select: none; user-select: none;
+}
+
+/* The one scaling knob, and it governs ONLY the tap-target controls this sheet grew for a wall screen:
+   the network chips, the list pagers and the search keypad. Every rule that predates it is px and stays
+   px — `body` sets an explicit px font below, so nothing that existed before renders one pixel
+   differently. Those three controls have to be thumb-sized on a small wall screen AND sane in a pad's
+   full window, which is exactly what sizing them against a vmin-clamped root buys.
+   ORDER IS LOAD-BEARING: this must come AFTER the `html, body` rule and `body`'s `font:` shorthand must
+   not name `html`. The two used to be one `html, body { … font: 14px/1.4 … }` block that came second, and
+   the shorthand silently reset the root back to 14px — so every chip, pager and keypad key rendered at
+   roughly twice its intended size and the header alone ate 62% of a wall screen's height. */
+html { font-size: clamp(6.5px, 1.9vmin, 13.5px); }
+body { font: 14px/1.4 "Segoe UI", system-ui, sans-serif; }
+
+/* position: relative — the keypad is an overlay anchored to this box (see .kp). */
+.app { position: relative; display: flex; flex-direction: column; height: 100%; padding: 12px; gap: 10px; overflow: hidden; }
+.hidden { display: none !important; }
+
+/* ===================== TOP BAR ===================== */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; flex: none;
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border: 1px solid var(--line2); border-radius: 12px; padding: 10px 14px;
+  box-shadow: 0 2px 14px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03);
+}
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.brandText h1 { margin: 0; font-size: 16px; letter-spacing: 1px; text-transform: uppercase; color: var(--ink); }
+.brandText .sub { display: block; font-size: 11px; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.dot { width: 11px; height: 11px; border-radius: 50%; flex: none;
+  background: radial-gradient(circle at 50% 45%, #4a5160 0%, #2b323c 100%); }
+.dot.on { background: radial-gradient(circle at 50% 45%, #cfeee7 0%, var(--signal) 45%, #0c443b 100%);
+  box-shadow: 0 0 10px rgba(79,214,192,.7); }
+
+/* --- network selector chips (they replaced a native <select>) ---
+   Offscreen-rendered CEF draws no <select> popup at all, so the dropdown that used to sit here simply
+   never opened on a wall screen — and it was the only way to choose a network. Chips are plain buttons:
+   one press, one release, done. A controller that has gone dark keeps its chip in a DEAD state rather
+   than vanishing, because "that network is gone" and "that network is offline" are different problems
+   and the operator is entitled to tell them apart. */
+.netchips { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; max-width: 62%; }
+.netchip {
+  display: flex; align-items: center; gap: .6rem; cursor: pointer; min-width: 0; max-width: 22rem;
+  background: var(--inset); color: var(--silver); border: 1px solid var(--line2); border-radius: 7px;
+  padding: .5rem 1rem; min-height: 3.6rem; font: 1.6rem "Segoe UI", system-ui, sans-serif;
+}
+.netchip .nd { width: .9rem; height: .9rem; border-radius: 50%; flex: none; background: var(--dim); }
+.netchip .nl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.netchip.sel { color: var(--ink); border-color: rgba(79,214,192,.55);
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  box-shadow: inset 0 0 0 1px rgba(79,214,192,.15); }
+.netchip.sel .nd { background: var(--signal); box-shadow: 0 0 .8rem rgba(79,214,192,.7); }
+.netchip.dead { color: var(--dim); border-style: dashed; }
+.netchip.dead .nd { background: var(--crit); box-shadow: none; }
+.netchip:active { transform: translateY(1px); }
+
+/* ===================== EMPTY STATE ===================== */
+.empty { flex: 1; display: flex; align-items: center; justify-content: center; }
+.empty-card { text-align: center; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 14px; padding: 36px 40px; max-width: 440px; }
+.empty-icon { font-size: 46px; color: var(--amber); text-shadow: 0 0 18px rgba(245,185,66,.4); }
+.empty-card p { color: var(--dim); margin: 14px 0 0; line-height: 1.5; }
+
+/* ===================== CONTENT (two columns) ===================== */
+/* `min-height: 0` is not decoration. Once .content stacks (below), these become COLUMN flex items, and a
+   flex item's automatic minimum size is its content — so a column holding a 25-row list refused to shrink,
+   grew to its full content height and pushed the tabs, the search row and the pager clean out of
+   `.app { overflow: hidden }`. Nothing below the header was on screen or tappable at all. */
+.content { flex: 1; min-height: 0; display: flex; gap: 12px; }
+.main-col { flex: 2 1 0; min-width: 0; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+.side-col { flex: 1 1 0; min-width: 220px; min-height: 0; max-width: 340px; display: flex; flex-direction: column; gap: 8px; }
+
+@media (max-width: 640px) {
+  .content { flex-direction: column; }
+  .side-col { max-width: none; min-width: 0; }
+}
+
+/* ===================== ENERGY BAR ===================== */
+.energybar { flex: none; background: var(--panel); border: 1px solid var(--line2); border-radius: 10px;
+  padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; }
+.buf-head { display: flex; justify-content: space-between; align-items: baseline; }
+.buf-head span:first-child { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--dim); }
+.buf-val { font-size: 12px; color: var(--silver); font-variant-numeric: tabular-nums; }
+.bar { height: 9px; background: var(--inset); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.bar-fill { height: 100%; width: 0%; border-radius: 6px;
+  background: linear-gradient(90deg, var(--teal-dk), var(--signal));
+  box-shadow: 0 0 10px rgba(79,214,192,.4); transition: width .5s ease; }
+
+/* ===================== STAT TILES ===================== */
+.stat-row { flex: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; }
+.tile { background: var(--inset); border: 1px solid var(--line); border-radius: 8px;
+  padding: 6px 9px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tile b { font-size: 14px; color: var(--silver); font-variant-numeric: tabular-nums; line-height: 1.15;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile span { font-size: 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--dim); }
+.tile.crit b { color: var(--crit); text-shadow: 0 0 10px rgba(232,96,78,.35); }
+
+/* ===================== TABS ===================== */
+.tabs { flex: none; display: flex; gap: 6px; }
+.tabbtn {
+  flex: 1; background: var(--inset); color: var(--dim); border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 10px; font: 12px "Segoe UI", system-ui, sans-serif; text-transform: uppercase;
+  letter-spacing: .5px; cursor: pointer;
+}
+.tabbtn.active { color: var(--ink); background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border-color: rgba(79,214,192,.45); box-shadow: inset 0 0 0 1px rgba(79,214,192,.15); }
+
+/* ===================== SEARCH ===================== */
+.searchRow { flex: none; display: flex; align-items: center; gap: 8px;
+  background: var(--inset); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+.searchRow input { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--ink);
+  font: 13px "Segoe UI", system-ui, sans-serif; }
+.searchRow input::placeholder { color: var(--dim); }
+.searchCount { font-size: 11px; color: var(--dim); white-space: nowrap; }
+
+/* Opens the keypad. It lives INSIDE the search row rather than on a row of its own — a 512x384 wall
+   screen has no vertical room to spare, and the two controls are the same control. */
+.keybtn {
+  flex: none; cursor: pointer; white-space: nowrap;
+  background: var(--panel); color: var(--silver); border: 1px solid var(--line2); border-radius: 7px;
+  padding: .4rem 1rem; min-height: 3.4rem; font: 1.5rem "Segoe UI", system-ui, sans-serif;
+  text-transform: uppercase; letter-spacing: .3px;
+}
+.keybtn.on { color: var(--ink); border-color: rgba(79,214,192,.55);
+  background: linear-gradient(180deg, var(--panel2), var(--panel)); }
+.keybtn:active { transform: translateY(1px); }
+
+/* ===================== LISTS (storage / craftable) ===================== */
+/* position: relative — the pager's position mark measures rows with offsetTop, which is relative to the
+   nearest POSITIONED ancestor. Without this the scroll box would not be it (.app is positioned for the
+   keypad overlay) and the "first visible" number would be measured against the wrong origin. */
+.list { position: relative; flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 0; list-style: none;
+  display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: center; gap: 10px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+.empty-row { color: var(--dim); font-size: 12px; padding: 10px; text-align: center; }
+
+.chip { width: 28px; height: 28px; flex: none; border-radius: 7px; border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;
+  color: rgba(255,255,255,.92); text-shadow: 0 1px 1px rgba(0,0,0,.4); }
+
+.nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font-size: 13px; }
+.ct { flex: none; font-variant-numeric: tabular-nums; color: var(--signal); font-size: 13px; font-weight: 700; }
+
+.craftingBadge { font-size: 10px; text-transform: uppercase; letter-spacing: .3px; color: var(--amber);
+  background: rgba(245,185,66,.1); border: 1px solid rgba(245,185,66,.4); border-radius: 5px; padding: 1px 5px; }
+
+.craftrow .nm { flex: 1 1 auto; }
+.stepper { display: flex; align-items: center; gap: 4px; flex: none; }
+.stepbtn { width: 22px; height: 22px; border-radius: 5px; border: 1px solid var(--line2); background: var(--inset);
+  color: var(--silver); cursor: pointer; font-size: 13px; line-height: 1; padding: 0; }
+.stepbtn:active { background: var(--panel2); }
+.qtyval { min-width: 30px; text-align: center; font-variant-numeric: tabular-nums; color: var(--ink); font-size: 12px; }
+.craftbtn { flex: none; background: linear-gradient(180deg, #1e6b5e, var(--teal-dk)); color: #eafaf6;
+  border: 1px solid rgba(79,214,192,.55); border-radius: 6px; padding: 6px 12px; font-size: 12px;
+  font-weight: 700; text-transform: uppercase; letter-spacing: .3px; cursor: pointer; }
+.craftbtn:active { filter: brightness(.9); }
+
+.none { color: var(--dim); font-size: 12px; margin: 4px 2px; text-align: center; }
+
+/* ===================== SIDE COLUMN: TASKS ===================== */
+.side-head { display: flex; align-items: center; justify-content: space-between; }
+.side-head h2 { margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--dim); }
+.linkbtn { background: transparent; border: 1px solid var(--line2); color: var(--dim); border-radius: 6px;
+  padding: 4px 8px; font-size: 11px; cursor: pointer; }
+.linkbtn:hover { color: var(--crit); border-color: rgba(232,96,78,.4); }
+
+.tasks { position: relative; flex: 1; min-height: 0; overflow-y: auto; margin: 0; padding: 0; list-style: none;
+  display: flex; flex-direction: column; gap: 6px; }
+.task { display: flex; align-items: flex-start; gap: 8px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px 9px; }
+.task-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.task-head { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.task-head .nm { font-size: 12px; }
+.task-head .ct { font-size: 11px; }
+.task-bar { height: 6px; background: var(--inset); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.task-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--teal-dk), var(--signal));
+  box-shadow: 0 0 8px rgba(79,214,192,.4); transition: width .4s ease; }
+.task-state { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: .3px; }
+.cancelbtn { flex: none; width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--line2);
+  background: var(--inset); color: var(--dim); cursor: pointer; font-size: 11px; line-height: 1; padding: 0; }
+.cancelbtn:hover { color: var(--crit); border-color: rgba(232,96,78,.4); }
+
+/* ===================== PAGERS ===================== */
+/* Both scrolling regions above (.list and .tasks) are reachable ONLY by scrolling, and a wall screen
+   forwards a mouse press and a mouse release — no wheel, no drag. So every one of them carries two
+   explicit page buttons, dimmed at each end, plus a "first visible / total" position mark. */
+.pager { flex: none; display: grid; grid-template-columns: 1fr auto 1fr; gap: .5rem; }
+.pg {
+  cursor: pointer; padding: .45rem 0; min-height: 3.4rem; line-height: 1; font-size: 1.5rem;
+  background: var(--inset); color: var(--silver); border: 1px solid var(--line2); border-radius: 7px;
+}
+.pg:disabled { opacity: .3; cursor: default; }
+.pg:active:not(:disabled) { background: var(--panel2); transform: translateY(1px); }
+.pgpos { align-self: center; padding: 0 .6rem; white-space: nowrap;
+  font-size: 1.4rem; color: var(--dim); font-variant-numeric: tabular-nums; }
+
+/* ===================== SEARCH KEYPAD ===================== */
+/* A wall screen forwards no keystrokes, so the <input> next to the tabs is unusable there — but a pad
+   and the full-window desktop DO forward them, so the field stays and this is the second way in, not a
+   replacement. The two are kept in sync in client.js. An overlay rather than a row: at 512x384 there is
+   no height to hold both the keypad and a list worth searching. */
+.kp {
+  position: absolute; z-index: 5; left: 12px; right: 12px; bottom: 12px;
+  max-width: 68rem; margin: 0 auto; padding: 1.2rem;
+  display: flex; flex-direction: column; gap: .8rem;
+  background: linear-gradient(180deg, var(--panel2), var(--panel));
+  border: 1px solid var(--line2); border-radius: 12px;
+  box-shadow: 0 -.4rem 2.6rem rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.03);
+}
+.kp-head { display: flex; align-items: center; gap: .8rem; }
+.kp-label { flex: none; font-size: 1.4rem; text-transform: uppercase; letter-spacing: .5px; color: var(--dim); }
+.kp-q {
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  background: var(--inset); border: 1px solid var(--line); border-radius: 7px;
+  padding: .4rem .8rem; min-height: 3.4rem; color: var(--ink);
+  font: 1.8rem/2.6rem ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+.kp-q.empty { color: var(--dim); }
+.kp-act {
+  flex: none; cursor: pointer; white-space: nowrap;
+  background: var(--inset); color: var(--silver); border: 1px solid var(--line2); border-radius: 7px;
+  padding: .4rem 1.1rem; min-height: 3.4rem; font: 1.5rem "Segoe UI", system-ui, sans-serif;
+}
+.kp-act:active { transform: translateY(1px); }
+.kp-done { color: #eafaf6; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+  background: linear-gradient(180deg, #1e6b5e, var(--teal-dk)); border-color: rgba(79,214,192,.55); }
+
+.kp-grid { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: .5rem; }
+.kp-key {
+  cursor: pointer; padding: 0; min-height: 5.2rem; border-radius: 7px;
+  background: var(--inset); color: var(--ink); border: 1px solid var(--line2);
+  font: 700 2rem "Segoe UI", system-ui, sans-serif; font-variant-numeric: tabular-nums;
+}
+.kp-key:active { background: var(--panel2); transform: translateY(1px); }
+
+/* ===================== STATUS LINE ===================== */
+.statusLine { flex: none; font-size: 12px; border-radius: 8px; padding: 7px 10px; border: 1px solid var(--line); }
+.statusLine.good { color: var(--signal); background: rgba(79,214,192,.08); border-color: rgba(79,214,192,.4); }
+.statusLine.bad { color: var(--crit); background: rgba(232,96,78,.08); border-color: rgba(232,96,78,.4); }
+
+/* ===================== SHORT VIEWPORT — COMPACT CHROME =====================
+   On a wall screen the scarce axis is VERTICAL, not horizontal. The browser is `[screens]
+   browserResolution` CSS px wide and three quarters of that tall, and that knob is a CLIENT performance
+   setting spanning a 16x range — so this page cannot target one size, it has to degrade. The width
+   breakpoint above already stacks the two columns; stacking alone spends the height it just saved on
+   chrome and leaves the storage list a couple of rows tall.
+
+   So: a HEIGHT query, not another width one. Every fixed-height thing above the list — the header, the
+   energy bar, the stat tiles, the tabs, the search row — collapses toward a single line, the rows
+   themselves get cheaper, and what is left goes to the list. No CONTROL is hidden and nothing MEANS
+   anything different: the energy bar is still stored/capacity/%, a tile is still one number and its caption, the
+   pager is still first-visible/total. The only caption dropped is the energy bar's own "Network energy" —
+   a teal fill bar next to "3.8M / 8.0M (48%)" does not need to be told what it is, and the caption cost a
+   whole line of a 384px screen.
+
+   The bound on how far this can go is TAP, not legibility: a wall screen forwards a mouse press and a
+   release and nothing else, so every control here still has to be hittable with a cursor. The chips,
+   pagers, keypad keys and the keypad's own buttons therefore stay sized in `rem` (the vmin-clamped root
+   above) rather than being shrunk to px. */
+@media (max-height: 700px) {
+  .app { padding: 6px; gap: 6px; }
+
+  /* --- header: ONE line, and the header never wraps ---
+     `flex-wrap: wrap` on a full-height screen is fine; here a wrapped header costs a third of the
+     viewport, so the brand and the chip row are made to shrink instead (both already ellipsise). The
+     chip row does not wrap either: N chips stacked vertically would eat the page, and chips pushed
+     past the right edge would be unreachable on a tap-only surface — a truncated label the operator
+     can still press beats a full label they cannot. */
+  .topbar { flex-wrap: nowrap; padding: 4px 8px; gap: 8px; border-radius: 8px; }
+  .brand { gap: 7px; }
+  .brandText { min-width: 0; }
+  .brandText h1 { font-size: 12px; letter-spacing: .5px;
+                  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .brandText .sub { font-size: 9px; }
+  .dot { width: 8px; height: 8px; }
+  .netchips { flex: 0 1 auto; flex-wrap: nowrap; min-width: 0; max-width: 74%; gap: .35rem; }
+  .netchip { min-height: 2.6rem; max-width: 18rem; padding: .25rem .7rem; gap: .45rem;
+             font-size: 1.3rem; border-radius: 6px; }
+  .netchip .nd { width: .8rem; height: .8rem; }
+
+  /* --- the chrome above the list pairs up two-across ---
+     Four full-width bands (energy, stats, tabs, search) cost four line-heights plus four gaps. Paired
+     they cost two. Exactly one of #storageList / #craftList — and one of their pagers — is displayed at
+     a time, so both can be given the same grid row without ever overlapping. */
+  .main-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+              grid-template-rows: auto auto minmax(0, 1fr) auto; }
+  .main-col > .energybar { grid-area: 1 / 1; }
+  .main-col > .stat-row  { grid-area: 1 / 2; }
+  .main-col > .tabs      { grid-area: 2 / 1; }
+  .main-col > .searchRow { grid-area: 2 / 2; }
+  .main-col > .list      { grid-area: 3 / 1 / 4 / 3; }
+  .main-col > .pager     { grid-area: 4 / 1 / 5 / 3; }
+  .main-col > .none      { grid-area: 3 / 1 / 4 / 3; align-self: start; }
+
+  /* --- energy: caption, readout and fill on ONE line --- */
+  .energybar { flex-direction: row; align-items: center; gap: 8px; padding: 3px 8px; border-radius: 8px; }
+  .buf-head { flex: none; }
+  .buf-head span:first-child { display: none; }
+  .buf-val { font-size: 10px; }
+  .bar { flex: 1; min-width: 3rem; height: 7px; }
+
+  /* --- stat tiles: number and caption side by side ---
+     `.tile b` must never shrink. A tile whose CAPTION is clipped to "ITEM…" still reads; a tile whose
+     VALUE is clipped to "1…" is a lie, and that is what happens by default because the value carries
+     the ellipsis rule. */
+  .stat-row { grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); gap: 5px; }
+  .tile { flex-direction: row; align-items: baseline; gap: 4px; padding: 2px 6px; border-radius: 6px; }
+  .tile b { flex: none; font-size: 11px; }
+  .tile span { flex: 0 1 auto; min-width: 0; font-size: 8px; letter-spacing: .2px;
+               overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* --- tabs + search --- */
+  .tabs { gap: 4px; }
+  .tabbtn { padding: 3px 6px; font-size: 10px; border-radius: 6px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .searchRow { padding: 3px 6px; gap: 6px; border-radius: 6px; }
+  .searchRow input { font-size: 11px; }
+  /* overflow:hidden is what lets it collapse — a nowrap flex item's automatic minimum is its text, and
+     that text was pushing the keypad button off the right edge on the narrowest screens */
+  .searchCount { min-width: 0; overflow: hidden; font-size: 9px; }
+  .keybtn { min-height: 2.6rem; padding: .25rem .8rem; font-size: 1.3rem; }
+
+  /* --- the list itself: this is where the reclaimed height goes --- */
+  .main-col, .side-col { gap: 4px; }
+  .list, .tasks { gap: 2px; }
+  .row { padding: 2px 6px; gap: 6px; border-radius: 6px; }
+  .chip { width: 18px; height: 18px; border-radius: 5px; font-size: 9px; }
+  .nm, .ct { font-size: 11px; }
+  .empty-row { font-size: 10px; padding: 5px; }
+  .craftingBadge { font-size: 8px; padding: 0 3px; }
+  .stepper { gap: 3px; }
+  .stepbtn { width: 18px; height: 18px; font-size: 11px; }
+  .qtyval { min-width: 22px; font-size: 10px; }
+  .craftbtn { padding: 3px 8px; font-size: 10px; }
+  .none { font-size: 10px; margin: 2px; }
+
+  /* --- tasks: one line per task (name+qty, fill, state) --- */
+  .side-head h2 { font-size: 10px; letter-spacing: .5px; }
+  .linkbtn { padding: 1px 5px; font-size: 9px; }
+  .task { padding: 3px 5px; gap: 6px; border-radius: 6px; align-items: center; }
+  .task-body { flex-direction: row; align-items: center; gap: 6px; }
+  .task-head { flex: 0 1 auto; min-width: 0; max-width: 55%; }
+  .task-head .nm { flex: 0 1 auto; font-size: 10px; }
+  .task-head .ct { font-size: 9px; }
+  .task-bar { flex: 1 1 2rem; height: 5px; }
+  .task-state { flex: none; font-size: 8px; white-space: nowrap; }
+  .cancelbtn { width: 18px; height: 18px; font-size: 9px; }
+
+  /* --- pagers stay tap-sized (rem), just a little tighter --- */
+  .pager { gap: .4rem; }
+  .pg { min-height: 2.6rem; padding: .25rem 0; font-size: 1.3rem; }
+  .pgpos { font-size: 1.2rem; padding: 0 .4rem; }
+
+  .statusLine { font-size: 10px; padding: 3px 6px; border-radius: 6px; }
+
+  /* --- empty state --- */
+  .empty-card { padding: 14px 18px; border-radius: 10px; }
+  .empty-icon { font-size: 26px; }
+  .empty-card p { font-size: 11px; margin: 8px 0 0; }
+
+  /* --- keypad: still an overlay, but it has to FIT inside a short screen --- */
+  .kp { left: 6px; right: 6px; bottom: 6px; padding: .7rem; gap: .5rem; border-radius: 9px; }
+  .kp-label { font-size: 1.2rem; }
+  .kp-q { min-height: 2.8rem; font-size: 1.5rem; line-height: 2rem; }
+  .kp-act { min-height: 2.8rem; font-size: 1.3rem; padding: .25rem .8rem; }
+  .kp-grid { gap: .4rem; }
+  .kp-key { min-height: 4.2rem; font-size: 1.7rem; }
+}
+
+/* Short AND narrow — i.e. a stacked wall screen. The stack splits the height 2:1 between the item list
+   and the task panel, which is the wrong ratio when there is barely any height to split: the terminal is
+   for finding items. So the task panel is sized to what it needs — its head, one task row and its pager,
+   with the pager reaching the rest — and everything left over goes to the list. */
+@media (max-width: 640px) and (max-height: 700px) {
+  .main-col { flex: 1 1 0; }
+  .side-col { flex: 0 0 auto; }
+  .tasks { flex: 0 0 auto; min-height: 12px; max-height: 30px; }
+}
+
+/* ===================== VERY SHORT — the bottom of the browserResolution range =====================
+   Below this the compacted chrome and a second panel cannot both exist. Each tier drops the least
+   load-bearing thing left, and only ever things that are READOUTS: every control the operator needs to
+   drive the terminal — the network chips, the mode toggle, the filter and its keypad, and the pager —
+   survives all the way down. Turn browserResolution back up and the readouts come back.
+
+   All three tiers are also gated on width, because a viewport this short can only BE a wall screen: a
+   screen browser is 4:3, so height <= 480 implies width <= 640, and Minecraft's own window floor (854x480)
+   keeps the computer GUI above them. The width clause costs nothing and stops a future wide-but-short
+   surface inheriting a stacked screen's compromises. */
+@media (max-width: 640px) and (max-height: 340px) {
+  /* the chips already name the selected network; the rest of the sub-line is provenance */
+  .brandText .sub { display: none; }
+  /* the task panel cannot fit even one task row here, and a panel showing nothing is worse than a
+     panel that stands aside */
+  .side-col { display: none; }
+}
+
+@media (max-width: 640px) and (max-height: 260px) {
+  /* last to go: the two readout bands. Losing them costs information, not reach — and they are the two
+     things that stop fitting first, because five stat tiles wrap into three lines once the column is
+     this narrow. */
+  .energybar, .stat-row { display: none; }
+  /* only the mode toggle and the filter share the top row now, and the toggle is the one that has to
+     stay readable — it is a control, the search count beside it is not */
+  .main-col { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+              grid-template-rows: auto minmax(0, 1fr) auto; }
+  .main-col > .tabs      { grid-area: 1 / 1; }
+  .main-col > .searchRow { grid-area: 1 / 2; }
+  .main-col > .list      { grid-area: 2 / 1 / 3 / 3; }
+  .main-col > .pager     { grid-area: 3 / 1 / 4 / 3; }
+  .main-col > .none      { grid-area: 2 / 1 / 3 / 3; }
+}
+
+@media (max-width: 640px) and (max-height: 150px) {
+  /* browserResolution's floor of 128 gives a 128x96 browser, and the controls the operator cannot do
+     without — the chips, the mode toggle, the filter and the pager — need more height than that screen
+     has. Nothing here can style that away. What it CAN do is stop pairing the bands, so the filter stays
+     on screen instead of being pushed off the right edge by the mode toggle beside it. */
+  .main-col { display: flex; }
+}

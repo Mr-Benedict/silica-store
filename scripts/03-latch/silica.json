@@ -1,0 +1,15 @@
+{
+  "id": "03-latch",
+  "title": "03 Latch — Redstone Toggle",
+  "summary": "Redstone toggle: a pulse in flips an output that stays flipped until the next pulse",
+  "kind": "script",
+  "category": "starter",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "redstone",
+      "fs"
+    ],
+    "parts": []
+  }
+}

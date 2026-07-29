@@ -1,0 +1,19 @@
+{
+  "id": "keycard",
+  "title": "Keycard Access Control",
+  "summary": "Keycard readers and secure doors: a roster, an access log, and remote unlock",
+  "kind": "app",
+  "category": "security",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "network",
+      "web",
+      "security"
+    ],
+    "parts": [
+      "gpu",
+      "nic"
+    ]
+  }
+}

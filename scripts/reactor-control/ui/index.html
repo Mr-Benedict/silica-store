@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reactor Control Room</title>
+<!-- style.css + client.js are siblings, inlined by the server bundler. -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ok:false — full-sheet placeholder shown instead of the board -->
+<div class="offsheet" id="offsheet"><div class="off-card">
+  <div class="off-mark">RCTR<b>//</b>CTRL</div>
+  <div class="off-tag">No process signal</div>
+  <div class="off-reason" id="offReason">Awaiting link...</div>
+  <div class="off-rule"></div>
+  <div class="off-foot">Fission control room &middot; Silica Path B</div>
+</div></div>
+
+<div class="sheet">
+
+<div class="rule">
+  <div class="mark">RCTR<b>//</b>CTRL</div>
+  <div class="tagline">Fission&nbsp;Control&nbsp;Room</div>
+  <div class="spacer"></div>
+  <div class="meta">
+    <span>OP&nbsp;<b id="op">-</b></span>
+    <span>UNITS&nbsp;<b id="devCount">-</b></span>
+    <span class="link" id="link"><span class="dot"></span><span id="linkTxt">LINK LIVE</span></span>
+  </div>
+</div>
+
+<div class="board">
+
+<!-- ------------------------------- REACTOR (thermal) ------------------------------- -->
+<section class="node thermal" id="nReactor">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">RX</span><span class="n-name" id="rName">-</span>
+  <span class="n-state idle" id="rState"><span class="lamp"></span><span id="rStateTxt">-</span></span></div>
+<div class="chips" id="rChips"></div>
+<div class="n-body">
+  <div class="ph" id="rPh"><span>NO FISSION REACTOR ON NET</span></div>
+  <div class="readrow">
+    <div class="read">
+      <div class="lbl">Core temperature</div>
+      <div class="big"><b id="rTemp">-</b><span class="unit">K</span><span class="trend" id="rTrend"></span></div>
+      <div class="sub"><span class="pip" id="rBurning">BURNING</span><span class="subtxt" id="rCrit">-</span></div>
+    </div>
+    <div class="ring" id="rRing">
+      <svg viewBox="0 0 100 100"><circle class="rt" cx="50" cy="50" r="40"></circle>
+      <circle class="rv" cx="50" cy="50" r="40" stroke-dasharray="251.3" stroke-dashoffset="251.3"></circle></svg>
+      <div class="cap"><b id="rRingV">-</b><span>burn load</span></div>
+    </div>
+  </div>
+  <div class="ctlblock">
+    <div class="cb-head"><span>Burn rate &middot; mB/t</span><b id="rBurnRead">-</b></div>
+    <div class="btnrow" id="rStep">
+      <button class="sw" type="button" data-d="-1">&minus;1</button>
+      <button class="sw" type="button" data-d="-0.1">&minus;0.1</button>
+      <button class="sw" type="button" data-d="0.1">+0.1</button>
+      <button class="sw" type="button" data-d="1">+1</button>
+    </div>
+    <div class="btnrow" id="rPre">
+      <button class="sw ghost" type="button" data-f="0">0</button>
+      <button class="sw ghost" type="button" data-f="0.25">25%</button>
+      <button class="sw ghost" type="button" data-f="0.5">50%</button>
+      <button class="sw ghost" type="button" data-f="1">MAX</button>
+    </div>
+  </div>
+  <div class="levels">
+    <div class="lv"><span class="lt">Fuel</span><div class="track"><div class="fill lo-bad" id="fFuel"></div></div><span class="pv" id="pFuel">-</span><span class="val" id="vFuel">-</span></div>
+    <div class="lv"><span class="lt">Coolant</span><div class="track"><div class="fill lo-bad" id="fCool"></div></div><span class="pv" id="pCool">-</span><span class="val" id="vCool">-</span></div>
+    <div class="lv"><span class="lt">Heated</span><div class="track"><div class="fill hi-bad" id="fHeat"></div></div><span class="pv" id="pHeat">-</span><span class="val" id="vHeat">-</span></div>
+    <div class="lv"><span class="lt">Waste</span><div class="track"><div class="fill hi-bad" id="fWaste"></div></div><span class="pv" id="pWaste">-</span><span class="val" id="vWaste">-</span></div>
+  </div>
+  <div class="tags">
+    <div class="tg"><span class="k">Damage</span><span class="v" id="tDamage">-</span></div>
+    <div class="tg"><span class="k">Boil eff</span><span class="v" id="tBoil">-</span></div>
+    <div class="tg"><span class="k">Env loss</span><span class="v" id="tEnv">-</span></div>
+    <div class="tg"><span class="k">Rate limit</span><span class="v" id="tLimit">-</span></div>
+    <div class="tg"><span class="k">Max burn</span><span class="v" id="tMax">-</span></div>
+    <div class="tg"><span class="k">Plant burn</span><span class="v" id="tPlantBurn">-</span></div>
+    <div class="tg"><span class="k">Unit fuel</span><span class="v" id="tOwnFuel">-</span></div>
+    <div class="tg"><span class="k">Unit waste</span><span class="v" id="tOwnWaste">-</span></div>
+  </div>
+  <div class="runway">
+    <div class="rw"><div class="rw-l">Fuel &mdash; in reactor</div><div class="rw-v" id="wTank">-</div></div>
+    <div class="rw"><div class="rw-l">Fuel &mdash; with RS reserve</div><div class="rw-v" id="wTotal">-</div></div>
+    <div class="rw"><div class="rw-l">Waste full in</div><div class="rw-v" id="wWaste">-</div></div>
+  </div>
+</div>
+<div class="ctl">
+  <button class="sw go" type="button" id="btnActivate">ACTIVATE</button>
+  <button class="sw stop" type="button" id="btnScram">SCRAM</button>
+</div>
+</section>
+
+<!-- ------------------------------- TURBINE (electrical) ---------------------------- -->
+<section class="node elec" id="nTurbine">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">TB</span><span class="n-name" id="tName">-</span>
+  <span class="n-state idle" id="tState"><span class="lamp"></span><span id="tStateTxt">-</span></span></div>
+<div class="chips" id="tChips"></div>
+<div class="n-body">
+  <div class="ph" id="tPh"><span>NO INDUSTRIAL TURBINE ON NET</span></div>
+  <div class="readrow">
+    <div class="read">
+      <div class="lbl">Power output</div>
+      <div class="big"><b id="tProd">-</b><span class="unit">FE/t</span><span class="trend" id="tTrend"></span></div>
+      <div class="sub"><span class="subtxt" id="tProdMax">-</span></div>
+    </div>
+    <div class="ring" id="tRing">
+      <svg viewBox="0 0 100 100"><circle class="rt" cx="50" cy="50" r="40"></circle>
+      <circle class="rv" cx="50" cy="50" r="40" stroke-dasharray="251.3" stroke-dashoffset="251.3"></circle></svg>
+      <div class="cap"><b id="tRingV">-</b><span>load</span></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="cb-head"><span>RF buffer</span><b id="tBufPct">-</b></div>
+    <div class="track wide"><div class="fill" id="fBuf"></div></div>
+    <div class="netline" id="tNetLine"><span class="lamp"></span><span id="tNetTxt">-</span></div>
+    <div class="tags two">
+      <div class="tg"><span class="k">Stored</span><span class="v" id="tBufAbs">-</span></div>
+      <div class="tg"><span class="k">Draw</span><span class="v" id="tDraw">-</span></div>
+      <div class="tg"><span class="k" id="tRunL">Empty in</span><span class="v" id="tRunV">-</span></div>
+      <div class="tg"><span class="k">Net</span><span class="v" id="tNetV">-</span></div>
+    </div>
+  </div>
+  <div class="levels">
+    <div class="lv"><span class="lt">Steam</span><div class="track"><div class="fill" id="fSteam"></div></div><span class="pv" id="pSteam">-</span><span class="val" id="vSteam">-</span></div>
+    <div class="lv"><span class="lt">Flow</span><div class="track"><div class="fill" id="fFlow"></div></div><span class="pv" id="pFlow">-</span><span class="val" id="vFlow">-</span></div>
+  </div>
+  <div class="tags">
+    <div class="tg"><span class="k">Blades</span><span class="v" id="sBlades">-</span></div>
+    <div class="tg"><span class="k">Coils</span><span class="v" id="sCoils">-</span></div>
+    <div class="tg"><span class="k">Condensers</span><span class="v" id="sCond">-</span></div>
+    <div class="tg"><span class="k">Vents</span><span class="v" id="sVents">-</span></div>
+    <div class="tg"><span class="k">Dispersers</span><span class="v" id="sDisp">-</span></div>
+    <div class="tg"><span class="k">Dump</span><span class="v" id="sDump">-</span></div>
+  </div>
+</div>
+<div class="ctl"><button class="sw" type="button" id="btnDump">DUMP MODE</button></div>
+</section>
+
+<!-- ------------------------------- GRID + RS LOGISTICS ----------------------------- -->
+<div class="col">
+
+<section class="node bus grow" id="nGrid">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">BUS</span><span class="n-name">PLANT BUS</span>
+  <span class="n-state idle" id="gState"><span class="lamp"></span><span id="gStateTxt">-</span></span></div>
+<div class="n-body">
+  <div class="tiles">
+    <div class="tile"><div class="t-l">Production</div><div class="t-v" id="gProd">-</div><div class="t-s" id="gProdMax">-</div></div>
+    <div class="tile"><div class="t-l">Buffer</div><div class="t-v" id="gBuf">-</div><div class="t-s" id="gBufAbs">-</div></div>
+    <div class="tile"><div class="t-l">Net</div><div class="t-v" id="gNet">-</div><div class="t-s">FE/t</div></div>
+    <div class="tile"><div class="t-l">Draw</div><div class="t-v" id="gDraw">-</div><div class="t-s">FE/t</div></div>
+  </div>
+  <div class="track wide"><div class="fill" id="fGridBuf"></div></div>
+  <div class="tags two">
+    <div class="tg"><span class="k" id="gRunL">Buffer runway</span><span class="v" id="gRunV">-</span></div>
+    <div class="tg"><span class="k">Reactors hot</span><span class="v" id="gHot">-</span></div>
+  </div>
+  <div class="recorder">
+    <div class="rlbl">Strip recorder</div>
+    <div class="rleg"><i class="a"></i>TEMP&nbsp;K<i class="t"></i>PROD&nbsp;FE/t</div>
+    <canvas id="chart"></canvas>
+  </div>
+</div>
+</section>
+
+<section class="node bus" id="nFuel">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">RS</span><span class="n-name" id="fName">-</span>
+  <span class="n-state idle" id="fState"><span class="lamp"></span><span id="fStateTxt">-</span></span></div>
+<div class="n-body">
+  <div class="ph" id="fPh"><span>NO REFINED STORAGE NETWORK</span></div>
+  <div class="lv"><span class="lt">RS energy</span><div class="track"><div class="fill" id="fRsE"></div></div><span class="pv" id="pRsE">-</span><span class="val" id="vRsE">-</span></div>
+  <div class="tiles">
+    <div class="tile"><div class="t-l">Fissile reserve</div><div class="t-v" id="fReserve">-</div><div class="t-s" id="fReserveSec">-</div></div>
+    <div class="tile"><div class="t-l">In-reactor fuel</div><div class="t-v" id="fTank">-</div><div class="t-s" id="fTankCap">-</div></div>
+  </div>
+</div>
+</section>
+
+</div>
+</div>
+
+<!-- ---------------------------------- annunciator foot ------------------------------ -->
+<div class="foot">
+<div class="foot-main">
+  <div class="statusbar">
+    <span class="st-lamp" id="stLamp"></span>
+    <span class="st-txt" id="stTxt">Standing by...</span>
+    <span class="spacer"></span>
+    <span class="tbcell">Refresh<b>1.0 s</b></span>
+    <span class="tbcell">Frame<b id="tbFrame">-</b></span>
+    <span class="tbcell clock">Sys&nbsp;Time<b id="clock">--:--:--</b></span>
+  </div>
+  <div class="annun">
+    <div class="ablock">
+      <div class="ab-head">Safety interlock <b id="ilAt">-</b></div>
+      <div class="interlock off" id="interlock" role="button" tabindex="0"><span class="lamp"></span><span class="t" id="ilTxt">-</span></div>
+      <div class="limits">
+        <span class="chip" id="limCool">COOL -</span>
+        <span class="chip" id="limDmg">DMG -</span>
+        <span class="chip" id="limWaste">WASTE -</span>
+        <span class="chip" id="limTbuf">TBUF -</span>
+      </div>
+      <button class="sw tiny" type="button" id="btnSafety">ARM / DISARM</button>
+    </div>
+    <div class="ablock">
+      <div class="ab-head">Alarms <b id="alCount">0</b></div>
+      <div class="alist" id="alarms"></div>
+    </div>
+    <div class="ablock">
+      <div class="ab-head">Event log</div>
+      <div class="loglist" id="log"></div>
+    </div>
+  </div>
+</div>
+<button class="master" type="button" id="btnScramAll">
+  <span class="m-hz"></span>
+  <span class="m-top">EMERGENCY</span>
+  <span class="m-big">SCRAM</span>
+  <span class="m-big">ALL</span>
+  <span class="m-sub" id="mSub">-</span>
+</button>
+</div>
+
+</div>
+
+<script src="client.js"></script>
+</body>
+</html>

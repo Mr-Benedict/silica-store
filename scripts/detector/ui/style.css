@@ -1,0 +1,292 @@
+/* PERIMETER WATCH BOARD — a live security sheet. Sibling of builder-control / geo-prospector /
+   reactor-control: the same drafting language (near-black paper, warm ivory ink) with the watch-room
+   accents — amber = the sweep, cyan = the contact list, red = the alert (the one thing on this sheet
+   that acts), teal = clear / friendly.
+   Fixed + non-scrolling (html/body overflow:hidden, grid/flex everywhere); every dimension in rem off
+   ONE viewport-derived root, so the sheet scales as a unit from a 512x384 wall screen to a full-window
+   pocket render. System fonts + canvas, no assets, nothing to load, no external anything. */
+:root{
+  --paper:#080a0e;
+  --ink:#efe6d2;                 /* warm ivory — structure + labels */
+  --dim:rgba(239,230,210,.5);
+  --faint:rgba(239,230,210,.13);
+  --amber:#f4b63b;               /* the sweep / the detector itself */
+  --red:#ff5b49;                 /* hostile + the alert */
+  --teal:#3fe0c2;                /* clear / friendly */
+  --cyan:#84cdff;                /* the contact list / players */
+  --stencil:"Bahnschrift","DIN Condensed","DIN Alternate","Haettenschweiler","Impact",system-ui,sans-serif;
+  --mono:"SFMono-Regular","Consolas","Roboto Mono",ui-monospace,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font:1rem/1.35 var(--mono);-webkit-user-select:none;user-select:none;}
+/* THE single scaling knob — and it has to come AFTER the `font:` shorthand above. `font:1rem/1.35` also
+   sets font-size, and on the ROOT element `1rem` resolves against font-size's INITIAL value (16px, CSS
+   Values 4 §5.1.1), so a clamp written before the shorthand is silently overridden and the sheet stops
+   scaling entirely — it then lays out at a 16px root and overflows a 512x384 wall screen. */
+html{font-size:clamp(6.5px,1.9vmin,13.5px);}
+button{font-family:var(--mono);}
+/* one truncation utility — every label that can outgrow its cell clips with an ellipsis.
+   NOTE: .al / .ev are deliberately NOT here — an alarm you cannot finish reading is not an alarm. */
+.tagline,.n-name,.ct,.subtxt,.cb-head b,.tg .k,.tg .v,.t-l,.t-v,.st-txt,.ab-head,.sw,
+.read .lbl,.read .big b,.plbl,.pmeta,.fg,.rk,.rv,.rowhead span,.crow .cn,.crow .c,
+.m-top,.m-big,.m-sub,.more,.pgpos{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+/* one lamp, two sizes */
+.lamp,.dot{width:.62rem;height:.62rem;border-radius:50%;background:currentColor;box-shadow:0 0 .6rem currentColor;flex:none;}
+.n-state .lamp{width:.66rem;height:.66rem;}
+/* drafting grid + vignette */
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:
+  linear-gradient(rgba(239,230,210,.05) 1px,transparent 1px) 0 0/2.2rem 2.2rem,
+  linear-gradient(90deg,rgba(239,230,210,.05) 1px,transparent 1px) 0 0/2.2rem 2.2rem,
+  linear-gradient(rgba(239,230,210,.07) 1px,transparent 1px) 0 0/11rem 11rem,
+  linear-gradient(90deg,rgba(239,230,210,.07) 1px,transparent 1px) 0 0/11rem 11rem;}
+body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;background:radial-gradient(130% 110% at 50% 40%,transparent 55%,rgba(0,0,0,.6) 100%);}
+.sheet{position:relative;z-index:1;height:100%;display:grid;grid-template-rows:auto 1fr auto;gap:.65rem;padding:.9rem 1rem;min-height:0;}
+
+/* --- header rule --- */
+.rule{display:flex;align-items:flex-end;gap:1.1rem;border-bottom:1px solid var(--faint);padding-bottom:.55rem;min-width:0;}
+.mark{font-family:var(--stencil);font-size:1.75rem;line-height:.9;letter-spacing:.15rem;text-transform:uppercase;white-space:nowrap;}
+.mark b{color:var(--amber);font-weight:inherit;}
+.tagline{font-size:.78rem;letter-spacing:.22rem;text-transform:uppercase;color:var(--dim);}
+.spacer{flex:1;min-width:0;}
+.meta{display:flex;align-items:center;gap:1.2rem;font-size:.82rem;text-transform:uppercase;color:var(--dim);white-space:nowrap;}
+.meta b{color:var(--ink);letter-spacing:.14rem;}
+.link{display:flex;align-items:center;gap:.5rem;color:var(--teal);}
+.link .dot{animation:blink 1.6s ease-in-out infinite;}
+.link.down{color:var(--red);}
+.link.down .dot{animation:none;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* --- instrument board: three cards, each its own grid cell --- */
+.board{min-height:0;min-width:0;overflow:hidden;display:grid;grid-template-columns:1.15fr 1fr 1.1fr;gap:.6rem;}
+.node{position:relative;display:flex;flex-direction:column;padding:.85rem .9rem;min-width:0;min-height:0;border:1px solid var(--faint);background:rgba(11,14,20,.92);box-shadow:0 2px 1.6rem rgba(0,0,0,.5);overflow:hidden;}
+.node.watch{--ac:var(--amber);}
+.node.ctc{--ac:var(--cyan);}
+.node.alr{--ac:var(--red);}
+/* corner ticks */
+.node::before,.node::after,.node .tr,.node .bl{content:"";position:absolute;width:1rem;height:1rem;pointer-events:none;z-index:3;border:0 solid var(--ac);}
+.node::before{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+.node::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+.node .tr{top:-1px;right:-1px;border-width:2px 2px 0 0;}
+.node .bl{bottom:-1px;left:-1px;border-width:0 0 2px 2px;}
+.node.crit{animation:critglow 2.2s ease-in-out infinite;border-color:rgba(255,91,73,.35);}
+@keyframes critglow{0%,100%{box-shadow:inset 0 0 0 1px rgba(255,91,73,.25)}50%{box-shadow:inset 0 0 1.9rem rgba(255,91,73,.28)}}
+.n-head{display:flex;align-items:baseline;gap:.65rem;border-bottom:1px dashed var(--faint);padding-bottom:.45rem;margin-bottom:.5rem;flex:none;min-width:0;}
+.n-tag{font-size:.8rem;color:var(--ac);border:1px solid var(--ac);padding:0 .4rem;border-radius:2px;flex:none;}
+.n-name{font-family:var(--stencil);font-size:1.35rem;letter-spacing:.1rem;text-transform:uppercase;flex:1;}
+.n-state{font-size:.76rem;letter-spacing:.12rem;text-transform:uppercase;display:flex;align-items:center;gap:.4rem;color:var(--dim);flex:none;}
+.n-state.run{color:var(--teal);}
+.n-state.warn{color:var(--amber);}
+.n-state.hot{color:var(--red);}
+/* ONLY the red states strobe. A perimeter that blinks at a passing cow trains the operator to ignore
+   it, which is the one failure a watch board cannot afford. */
+.n-state.hot .lamp{animation:blink 1.4s ease-in-out infinite;}
+.n-body{position:relative;flex:1;min-height:0;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:.5rem;}
+/* placeholder overlay inside a node body */
+.ph{display:none;position:absolute;inset:0;z-index:5;align-items:center;justify-content:center;text-align:center;border:1px dashed var(--faint);background:rgba(8,10,14,.94);padding:.8rem;overflow:hidden;}
+.ph.on{display:flex;}
+.ph span{font-size:.85rem;letter-spacing:.16rem;text-transform:uppercase;color:var(--dim);}
+
+/* --- unit selector chips (client-side selection: two viewers may watch different gates) --- */
+.chips{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.5rem;flex:none;overflow:hidden;max-height:3.4rem;}
+.chips.hide{display:none;}
+.chip-b{display:flex;align-items:center;gap:.35rem;cursor:pointer;background:transparent;border:1px solid var(--faint);color:var(--dim);font-family:var(--mono);font-size:.76rem;text-transform:uppercase;padding:.15rem .45rem;border-radius:2px;max-width:9rem;overflow:hidden;}
+.chip-b .cl{width:.5rem;height:.5rem;border-radius:50%;background:currentColor;box-shadow:0 0 .45rem currentColor;flex:none;}
+.chip-b .ct{max-width:6.5rem;}
+.chip-b.sel{border-color:var(--ac);color:var(--ink);background:rgba(239,230,210,.06);}
+.chip-b.st-run{color:var(--teal);}
+.chip-b.st-warn{color:var(--amber);}
+.chip-b.st-hot{color:var(--red);}
+.chip-b:active{transform:translateY(1px);}
+
+/* --- the radar: a plain canvas sized from its client rect each frame --- */
+.plot{position:relative;border:1px solid var(--faint);background:rgba(6,8,12,.72);overflow:hidden;min-width:0;min-height:0;}
+.plot.grow{flex:1 1 0;min-height:5rem;}
+.plot canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+.plbl{position:absolute;top:.27rem;left:.44rem;z-index:2;font-size:.65rem;letter-spacing:.13rem;text-transform:uppercase;color:var(--dim);max-width:42%;}
+.pmeta{position:absolute;top:.27rem;right:.44rem;z-index:2;font-size:.62rem;color:var(--dim);max-width:58%;text-align:right;}
+
+/* --- count tiles --- */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.3rem;flex:none;}
+.tile{border:1px solid var(--faint);border-top:2px solid var(--ac);padding:.26rem .38rem;min-width:0;background:rgba(6,8,12,.55);}
+.tile.hos{border-top-color:var(--red);}
+.tile.fri{border-top-color:var(--teal);}
+.tile.ply{border-top-color:var(--cyan);}
+.t-l{font-size:.63rem;letter-spacing:.08rem;text-transform:uppercase;color:var(--dim);}
+.t-v{font-family:var(--stencil);font-size:1.3rem;line-height:1.05;}
+.tile.hos .t-v{color:var(--red);}
+.tile.fri .t-v{color:var(--teal);}
+.tile.ply .t-v{color:var(--cyan);}
+
+/* --- tag readouts --- */
+.tags{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.24rem .8rem;flex:none;}
+.tg{display:flex;justify-content:space-between;gap:.5rem;border-bottom:1px dotted var(--faint);padding-bottom:.12rem;min-width:0;}
+.tg .k{font-size:.7rem;text-transform:uppercase;color:var(--dim);}
+/* the "derived" marker: this figure is NOT measured (no verb reports the block's redstone output), so
+   the label has to say so wherever the number appears */
+.tg .k i{font-style:normal;font-size:.58rem;letter-spacing:.06rem;color:rgba(239,230,210,.3);margin-left:.25rem;}
+.tg .v{font-size:.78rem;text-align:right;}
+.tg .v.up{color:var(--teal);}
+.tg .v.down,.tg .v.crit{color:var(--red);}
+.tg .v.warm{color:var(--amber);}
+
+/* --- the selected detector's own config: four filter chips + a range stepper --- */
+.lower{margin-top:auto;display:flex;flex-direction:column;gap:.45rem;flex:none;min-width:0;}
+.cb-head{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;font-size:.72rem;letter-spacing:.14rem;text-transform:uppercase;color:var(--dim);margin-bottom:.3rem;min-width:0;}
+.cb-head b{font-size:.9rem;color:var(--ink);}
+.cb-head b.blindtag{color:var(--red);}      /* an empty filter matches NOTHING — say so loudly */
+.filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.25rem;flex:none;}
+.fg{cursor:pointer;font-family:var(--mono);font-size:.66rem;letter-spacing:.04rem;text-transform:uppercase;border:1px solid var(--faint);background:transparent;color:var(--dim);padding:.2rem;border-radius:2px;display:flex;align-items:center;justify-content:center;gap:.28rem;min-width:0;}
+.fg i{width:.4rem;height:.4rem;border-radius:50%;background:currentColor;opacity:.3;flex:none;}
+.fg.on{color:var(--amber);border-color:rgba(244,182,59,.55);background:rgba(244,182,59,.08);}
+.fg.on i{opacity:1;box-shadow:0 0 .45rem currentColor;}
+.fg:disabled{opacity:.28;cursor:default;}
+.fg:active:not(:disabled){transform:translateY(1px);}
+.rangerow{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto auto;align-items:center;gap:.35rem;flex:none;}
+.rk{font-size:.68rem;letter-spacing:.12rem;text-transform:uppercase;color:var(--dim);}
+.rangerow .rv{font-size:.85rem;color:var(--amber);min-width:1.6rem;text-align:right;}
+/* The track is a SHORTCUT, never the only way in: MCEF forwards a tap reliably and a drag not at all,
+   so there is no grabbable thumb anywhere on this sheet — the knob is a marker and eats no clicks,
+   and every value the track can reach is also reachable from the -/+ steppers beside it. */
+.track{position:relative;height:.5rem;background:var(--faint);overflow:hidden;min-width:0;}
+.track.tap{cursor:pointer;overflow:visible;}
+.track .fill{position:absolute;inset:0 auto 0 0;width:0;background:var(--amber);transition:width .2s ease;}
+.track .knob{position:absolute;top:50%;width:.7rem;height:.7rem;border-radius:50%;background:var(--amber);transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 0 .5rem rgba(244,182,59,.6);transition:left .2s ease;}
+
+/* --- contact rows --- */
+.rowhead,.crow{display:grid;grid-template-columns:minmax(0,1.7fr) 1.55fr .8fr;gap:.3rem;align-items:center;}
+.rowhead{flex:none;font-size:.62rem;letter-spacing:.08rem;text-transform:uppercase;color:var(--dim);border-bottom:1px dashed var(--faint);padding:0 .2rem .15rem;}
+.rowhead .c,.crow .c{text-align:right;}
+.rows{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:.08rem;}
+.rows::-webkit-scrollbar{width:.42rem;}
+.rows::-webkit-scrollbar-thumb{background:var(--faint);}
+.crow{font-size:.72rem;color:var(--ink);border-left:2px solid var(--faint);padding:.08rem .2rem;flex:none;}
+.crow .nm{display:flex;align-items:center;gap:.3rem;min-width:0;}
+.crow .cn{min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.cdot{width:.45rem;height:.45rem;border-radius:50%;flex:none;background:currentColor;box-shadow:0 0 .35rem currentColor;}
+.crow.hos{border-left-color:var(--red);color:#ffb3aa;}
+.crow.fri{border-left-color:var(--teal);}
+.crow.ply{border-left-color:var(--cyan);color:var(--cyan);}
+.crow.hos .cdot{color:var(--red);}
+.crow.fri .cdot{color:var(--teal);}
+.crow.ply .cdot{color:var(--cyan);}
+/* the truncation notice: present only while rows were actually dropped */
+.more{display:none;flex:none;font-size:.64rem;letter-spacing:.06rem;text-transform:uppercase;color:var(--dim);border-left:2px solid var(--faint);padding:.05rem .3rem;}
+.more.on{display:block;}
+
+/* --- hero readout + ring --- */
+.readrow{display:flex;align-items:center;gap:.8rem;flex:none;min-width:0;}
+.read{flex:1;min-width:0;overflow:hidden;}
+.read .lbl{font-size:.72rem;letter-spacing:.16rem;text-transform:uppercase;color:var(--dim);}
+.read .big{display:flex;align-items:baseline;gap:.5rem;min-width:0;}
+.read .big b{font-family:var(--stencil);font-size:2.6rem;line-height:.98;color:var(--ink);font-weight:400;}
+.read .big b.hot{color:var(--red);}
+.read .big b.warm{color:var(--amber);}
+.read .sub{display:flex;align-items:center;gap:.45rem;margin-top:.15rem;min-width:0;}
+.subtxt{font-size:.72rem;letter-spacing:.08rem;text-transform:uppercase;color:var(--dim);}
+.pip{font-size:.68rem;letter-spacing:.12rem;border:1px solid var(--faint);color:rgba(239,230,210,.28);padding:0 .32rem;border-radius:2px;flex:none;}
+.pip.on{color:var(--amber);border-color:var(--amber);box-shadow:0 0 .6rem rgba(244,182,59,.35);animation:blink 1.5s ease-in-out infinite;}
+.ring{width:5.2rem;height:5.2rem;flex:none;position:relative;}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg);}
+.ring .rt{fill:none;stroke:var(--faint);stroke-width:7;}
+.ring .rv{fill:none;stroke:var(--ac);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .35s ease;}
+.ring .cap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring .cap b{font-size:1.15rem;}
+.ring .cap span{font-size:.6rem;text-transform:uppercase;color:var(--dim);}
+
+/* --- panels / switches --- */
+.panel{border:1px solid var(--faint);padding:.4rem .5rem;flex:none;background:rgba(6,8,12,.55);min-width:0;}
+.stepper{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:.25rem;}
+.stepper .sw{width:100%;}
+.ctl{margin-top:.1rem;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:.4rem;flex:none;}
+.ctl.three{grid-auto-flow:row;grid-template-columns:repeat(3,minmax(0,1fr));}
+.sw{cursor:pointer;font-size:.78rem;font-weight:700;letter-spacing:.06rem;text-transform:uppercase;color:var(--ink);background:transparent;border:1px solid var(--faint);padding:.32rem .3rem;border-radius:2px;transition:background .1s,border-color .12s,color .12s;}
+.sw:hover:not(:disabled){border-color:var(--ac);color:var(--ac);}
+.sw:active:not(:disabled){background:var(--ac);color:#06090d;transform:translateY(1px);}
+.sw:disabled{opacity:.28;cursor:default;}
+.sw.ghost{color:var(--dim);}
+.sw.tiny{font-size:.7rem;padding:.22rem .4rem;}
+.sw.on{border-color:var(--ac);color:var(--ac);background:rgba(255,91,73,.08);}
+/* the redstone door refusing is an alarm, not an exception — present only while it is refusing */
+.faultline{display:none;flex:none;font-size:.68rem;line-height:1.25;color:var(--red);border-left:2px solid var(--red);padding:.1rem .35rem;white-space:normal;overflow-wrap:anywhere;}
+.faultline.on{display:block;}
+
+/* --- annunciator foot --- */
+.foot{flex:none;display:flex;gap:.6rem;height:12.6rem;min-height:0;}
+.foot-main{flex:1;min-width:0;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);gap:.45rem;}
+.statusbar{display:flex;align-items:center;gap:.55rem;border:1px solid var(--faint);padding:.25rem .55rem;background:rgba(6,8,12,.6);min-width:0;}
+.st-lamp{width:.6rem;height:.6rem;border-radius:50%;background:var(--dim);flex:none;}
+.st-lamp.ok{background:var(--teal);box-shadow:0 0 .6rem var(--teal);}
+.st-lamp.err{background:var(--red);box-shadow:0 0 .6rem var(--red);}
+.st-txt{font-size:.82rem;flex:0 1 auto;}
+.st-txt.err{color:#ffb3aa;}
+.tbcell{font-size:.66rem;letter-spacing:.12rem;text-transform:uppercase;color:var(--dim);border-left:1px solid var(--faint);padding-left:.6rem;margin-left:.2rem;white-space:nowrap;flex:none;}
+.tbcell b{color:var(--ink);margin-left:.35rem;font-size:.78rem;}
+.tbcell.clock b{color:var(--teal);}
+.annun{display:grid;grid-template-columns:1fr 1.3fr;gap:.5rem;min-height:0;}
+.ablock{display:flex;flex-direction:column;gap:.3rem;min-width:0;min-height:0;border:1px solid var(--faint);background:rgba(11,14,20,.9);padding:.35rem .45rem;overflow:hidden;}
+.ab-head{display:flex;align-items:baseline;gap:.3rem;font-size:.65rem;letter-spacing:.16rem;text-transform:uppercase;color:var(--dim);flex:none;border-bottom:1px dashed var(--faint);padding-bottom:.18rem;}
+.ab-head b{color:var(--ink);}
+.ab-pos{margin-left:auto;letter-spacing:.06rem;color:var(--ink);}
+.alist,.loglist{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:.16rem;}
+.alist::-webkit-scrollbar,.loglist::-webkit-scrollbar{width:.42rem;}
+.alist::-webkit-scrollbar-thumb,.loglist::-webkit-scrollbar-thumb{background:var(--faint);}
+/* entries WRAP — a unit label plus the filter list must stay readable, so nothing here truncates */
+.al,.ev{font-size:.72rem;line-height:1.3;padding:.1rem .3rem;border-left:2px solid var(--faint);color:var(--dim);flex:none;min-width:0;white-space:normal;overflow-wrap:anywhere;}
+.al b{color:var(--ink);font-weight:700;}
+.al.warn{border-color:var(--amber);color:var(--amber);}
+.al.warn b{color:var(--amber);}
+.al.crit{border-color:var(--red);color:#ffb3aa;background:rgba(255,91,73,.07);}
+.al.crit b{color:#ffb3aa;}
+.al.none{border-color:rgba(63,224,194,.4);color:var(--teal);}
+.ev.ok{border-color:var(--teal);color:var(--ink);}
+.ev.err{border-color:var(--red);color:#ffb3aa;}
+/* page buttons: the only reliable way to reach off-screen entries (no wheel through MCEF, tap-only walls) */
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:.25rem;flex:none;}
+.ctc .pager{grid-template-columns:1fr auto 1fr;}   /* the contact pager carries a position mark */
+.pg{cursor:pointer;font-family:var(--mono);font-size:.7rem;line-height:1;color:var(--ink);background:rgba(6,8,12,.6);border:1px solid var(--faint);border-radius:2px;padding:.26rem 0;}
+.pg:hover:not(:disabled){border-color:var(--ac,var(--amber));color:var(--ac,var(--amber));}
+.pg:active:not(:disabled){background:var(--faint);transform:translateY(1px);}
+.pg:disabled{opacity:.3;cursor:default;}
+.pgpos{font-size:.64rem;color:var(--dim);text-align:center;align-self:center;}
+
+/* --- master arm --- */
+.masterwrap{flex:none;width:9.4rem;min-width:0;display:flex;flex-direction:column;gap:.4rem;}
+.master{flex:1 1 auto;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:rgba(38,7,4,.72);border:2px solid var(--red);color:var(--red);border-radius:2px;overflow:hidden;padding:.5rem .3rem;transition:background .12s,color .12s;}
+.m-hz{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(45deg,rgba(255,91,73,.13) 0 .6rem,transparent .6rem 1.2rem);}
+.m-top{font-size:.64rem;letter-spacing:.2rem;text-transform:uppercase;color:rgba(255,91,73,.75);z-index:1;max-width:100%;}
+.m-big{font-family:var(--stencil);font-size:2rem;line-height:.92;letter-spacing:.12rem;z-index:1;max-width:100%;}
+.m-sub{font-size:.62rem;text-transform:uppercase;color:rgba(255,91,73,.7);z-index:1;margin-top:.25rem;max-width:100%;}
+.master:hover:not(:disabled){background:rgba(70,10,6,.85);}
+.master:active:not(:disabled){background:var(--red);color:#2a0906;}
+.master:active:not(:disabled) .m-top,.master:active:not(:disabled) .m-sub{color:#2a0906;}
+.master:disabled{opacity:.3;cursor:default;}
+.master.armed{animation:mpulse 1.15s ease-in-out infinite;}
+@keyframes mpulse{0%,100%{box-shadow:0 0 0 rgba(255,91,73,0)}50%{box-shadow:0 0 1.6rem rgba(255,91,73,.75)}}
+
+/* --- ok:false sheet --- */
+.offsheet{display:none;position:fixed;inset:0;z-index:80;align-items:center;justify-content:center;padding:2rem;background:var(--paper);}
+.offsheet.on{display:flex;}
+.off-card{max-width:44rem;width:100%;border:1px solid var(--faint);border-top:2px solid var(--amber);padding:2rem 2.2rem;background:rgba(11,14,20,.92);background-image:repeating-linear-gradient(45deg,rgba(239,230,210,.035) 0 .8rem,transparent .8rem 1.6rem);}
+.off-mark{font-family:var(--stencil);font-size:2.4rem;line-height:.9;letter-spacing:.2rem;text-transform:uppercase;}
+.off-mark b{color:var(--amber);font-weight:inherit;}
+.off-tag{font-size:.82rem;letter-spacing:.3rem;text-transform:uppercase;color:var(--red);margin-top:.5rem;}
+.off-reason{line-height:1.5;color:var(--dim);margin-top:1.1rem;max-height:9rem;overflow:hidden;}
+.off-rule{height:1px;background:var(--faint);margin:1.2rem 0 .7rem;}
+.off-foot{font-size:.7rem;letter-spacing:.2rem;text-transform:uppercase;color:rgba(239,230,210,.3);}
+
+/* very short surfaces (a 512x384 wall screen): give the board every pixel we can spare. */
+@media (max-height:400px){
+  .sheet{padding:.6rem .7rem;gap:.45rem;}
+  .foot{height:10.4rem;}
+  .mark{font-size:1.45rem;}
+  .read .big b{font-size:2.1rem;}
+  .ring{width:4.2rem;height:4.2rem;}
+  .chips{max-height:1.7rem;}
+  .t-v{font-size:1.1rem;}
+  /* at 512px the card head is a three-way fight; the WCH/CTC/ALR tag is pure decoration, and giving
+     its width back to the name is the difference between "NO…" and a readable gate label */
+  .n-tag{display:none;}
+  .n-name{font-size:1.15rem;}
+  .n-state{font-size:.72rem;}
+  .masterwrap{width:8.2rem;}
+}

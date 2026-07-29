@@ -1,0 +1,18 @@
+{
+  "id": "collector",
+  "title": "Collector",
+  "summary": "Item Collector board: buffer contents, collection range and filter",
+  "kind": "app",
+  "category": "automation",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "network",
+      "web"
+    ],
+    "parts": [
+      "gpu",
+      "nic"
+    ]
+  }
+}

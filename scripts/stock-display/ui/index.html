@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stock Room</title>
+<!-- style.css + client.js are siblings, inlined by the server bundler. -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ok:false — full-sheet reason card shown INSTEAD of the board, never over a stale one. It starts
+     lit, so the first thing a viewer sees is "looking for it" rather than a board full of dashes. -->
+<div class="offsheet on" id="offsheet"><div class="off-card">
+  <div class="off-mark">STOCK<b>//</b>ROOM</div>
+  <div class="off-tag">No inventory signal</div>
+  <div class="off-reason" id="offReason">Searching for an inventory...</div>
+  <div class="off-rule"></div>
+  <div class="off-foot">Stock room board &middot; Silica Path B</div>
+</div></div>
+
+<div class="sheet">
+
+<div class="rule">
+  <div class="mark">STOCK<b>//</b>ROOM</div>
+  <div class="tagline">Stores</div>
+  <div class="spacer"></div>
+  <div class="meta">
+    <span>OP&nbsp;<b id="op">-</b></span>
+    <span>SLOTS&nbsp;<b id="hdrSlots">-</b></span>
+    <span>ITEMS&nbsp;<b id="hdrItems">-</b></span>
+    <span class="link" id="link"><span class="dot"></span><span id="linkTxt">LINK LIVE</span></span>
+  </div>
+</div>
+
+<div class="board">
+
+<!-- ------------------------------- STORES (how full it is) -------------------------------- -->
+<section class="node stk" id="nStock">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">STK</span><span class="n-name" id="invName">-</span>
+  <span class="n-state idle" id="fState"><span class="lamp"></span><span id="fStateTxt">-</span></span></div>
+<div class="n-body">
+  <div class="scol">
+    <div class="read">
+      <div class="lbl">Capacity in use</div>
+      <div class="big"><b id="pctBig">-</b><span class="unit">%</span></div>
+      <div class="sub"><span class="pip" id="pipFull">NEAR FULL</span><span class="subtxt" id="freeTxt">-</span></div>
+    </div>
+    <!-- the fill bar: used / slots, straight off items.summary(). It goes amber past 90 %. -->
+    <div class="gauge">
+      <div class="track"><div class="fill" id="fill"></div></div>
+      <span class="gval" id="gval">0 / 0 slots</span>
+    </div>
+  </div>
+  <div class="scol">
+    <div class="tiles">
+      <div class="tile"><div class="t-l">Used</div><div class="t-v" id="tUsed">-</div><div class="t-s">slots</div></div>
+      <div class="tile"><div class="t-l">Free</div><div class="t-v" id="tFree">-</div><div class="t-s">slots</div></div>
+      <div class="tile list"><div class="t-l">Kinds</div><div class="t-v" id="tKinds">-</div><div class="t-s">shown</div></div>
+      <div class="tile list"><div class="t-l">Items</div><div class="t-v" id="tItems">-</div><div class="t-s">counted</div></div>
+    </div>
+    <div class="tags">
+      <div class="tg"><span class="k">Watching</span><span class="v" id="tWatch">-</span></div>
+      <div class="tg"><span class="k">Slots read</span><span class="v" id="tRead">-</span></div>
+      <div class="tg"><span class="k">Filter</span><span class="v" id="tFilter">-</span></div>
+      <div class="tg"><span class="k">Tags offered</span><span class="v" id="tTags">-</span></div>
+    </div>
+  </div>
+  <!-- The honest footnote: a walk the slot cap cut short, or a list() the cap refused outright. It runs
+       the full width of the strip, it WRAPS and it never truncates — the numbers stop being the whole
+       truth here, so this is the one line on the sheet that has to be readable in full. -->
+  <div class="noteline" id="noteLine">-</div>
+</div>
+</section>
+
+<!-- ------------------------------- CONTENTS (what is in there, by name) --------------------
+     Two panes in one card, never both: the item list, and the per-slot inspector a tap on a row opens.
+     A swap rather than a second card, because the sheet is fixed and non-scrolling — a card that appears
+     would have to take its height from something. -->
+<section class="node cts" id="nContents">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">CTS</span><span class="n-name" id="cName">Contents</span>
+  <span class="n-state idle" id="cState"><span class="lamp"></span><span id="cStateTxt">-</span></span></div>
+<div class="n-body">
+
+<!-- ---------- pane 1: the list ---------- -->
+<div class="pane on" id="paneList">
+  <!-- Tag chips, not a text box, and they live in the card whose rows they narrow. A wall screen forwards
+       only mouse press and release, so a typed filter would be unreachable on the surface this board is
+       built for. The chips are built from the tags actually present in the inventory, so they follow
+       whatever mods are installed — there is not one item id in this app. -->
+  <div class="chips" id="chips"></div>
+  <div class="ph" id="cPh"><span>EMPTY</span></div>
+  <!-- Qty is the total for that item summed across every slot: twenty stacks of cobblestone are one row
+       reading 1,204, not twenty rows you add up in your head. A tap on the row opens the inspector for
+       the first slot holding it. -->
+  <div class="rowhead"><span>Item &middot; tap to inspect</span><span class="c">Qty</span></div>
+  <ul class="rows" id="list"></ul>
+  <!-- The only scrolling that works on every surface: a wall screen forwards no wheel event. -->
+  <div class="pager">
+    <button class="pg" type="button" id="lUp">&#9650;</button>
+    <span class="pgpos" id="lPos">0/0</span>
+    <button class="pg" type="button" id="lDn">&#9660;</button>
+  </div>
+</div>
+
+<!-- ---------- pane 2: one slot, in full ----------
+     items.detail(slot) — the record every row carries PLUS the stack's data components. One faculty call
+     per tap, cached on the server until the card closes or the slot changes; the buttons here are the only
+     things on this page that can cost the tick thread anything. -->
+<div class="pane" id="paneDet">
+  <div class="detbar">
+    <button class="pg back" type="button" id="dBack">&#9668;&nbsp;BACK</button>
+    <span class="dwhere" id="dWhere">SLOT &mdash;</span>
+    <span class="spacer"></span>
+    <!-- Step between the slots holding this item. It is what tells two enchanted books apart: same id,
+         same row, different components. -->
+    <button class="pg" type="button" id="dPrev" title="previous slot holding this item">&#9664;</button>
+    <span class="pgpos" id="dPos">0/0</span>
+    <button class="pg" type="button" id="dNext" title="next slot holding this item">&#9654;</button>
+    <button class="pg" type="button" id="dAgain" title="read this slot again">&#8635;</button>
+  </div>
+  <div class="dwrap">
+    <!-- the reason card: an empty slot, a slot the handler refused, a device that left, a row with no
+         slot behind it, and the tick between the tap and the answer. Never a blank sheet. -->
+    <div class="dstate on" id="dState"><div class="h" id="dStateH">READING</div>
+      <div class="r" id="dStateR">Asking the server for this slot...</div></div>
+    <div class="dhero">
+      <span class="sw-tile lg" id="dSw">?</span>
+      <div class="dn"><div class="dname" id="dName">-</div><div class="did" id="dId">-</div></div>
+      <!-- truncated is not a field here, it is a STATE: the badge blinks, the whole card goes amber, and
+           the status foot names the two knobs. It is the visible end of the component cap chain. -->
+      <span class="trunc" id="dTrunc">TRUNCATED</span>
+    </div>
+    <div class="tiles">
+      <div class="tile"><div class="t-l">Count</div><div class="t-v" id="dCount">-</div><div class="t-s">in slot</div></div>
+      <div class="tile"><div class="t-l">Stack</div><div class="t-v" id="dMax">-</div><div class="t-s">max</div></div>
+      <div class="tile"><div class="t-l">Wear</div><div class="t-v" id="dDur">-</div><div class="t-s">durability</div></div>
+      <div class="tile list"><div class="t-l">Fields</div><div class="t-v" id="dFields">-</div><div class="t-s">listed</div></div>
+    </div>
+    <!-- components are an arbitrarily nested map, so the server flattens them to dot paths and this pages
+         them with the same buttons as the item list — no tree, no scrollbar, no wheel, no keys. -->
+    <div class="crowhead"><span>Tag &middot; component path</span><span>Value</span></div>
+    <ul class="rows" id="comps"></ul>
+    <div class="pager">
+      <button class="pg" type="button" id="cUp">&#9650;</button>
+      <span class="pgpos" id="cPos">0/0</span>
+      <button class="pg" type="button" id="cDn">&#9660;</button>
+    </div>
+    <div class="noteline" id="dNote">-</div>
+  </div>
+</div>
+
+</div>
+</section>
+
+</div>
+
+<!-- ---------------------------------- status foot ---------------------------------------- -->
+<div class="foot">
+  <div class="statusbar">
+    <span class="st-lamp" id="stLamp"></span>
+    <span class="st-txt" id="stTxt">Standing by...</span>
+    <span class="spacer"></span>
+    <span class="tbcell">Filter<b id="tbFilter">ALL</b></span>
+    <span class="tbcell">Rows<b id="tbRows">-</b></span>
+    <span class="tbcell clock">Sys&nbsp;Time<b id="clock">--:--:--</b></span>
+  </div>
+</div>
+
+</div>
+
+<script src="client.js"></script>
+</body>
+</html>

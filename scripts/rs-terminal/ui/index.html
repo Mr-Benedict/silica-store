@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RS Storage Terminal</title>
+  <!-- Sibling files, served over silica:// alongside this page (folded in by the inline-bundler). -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Every control on this page is a TAP TARGET. A wall screen forwards a mouse press + release and
+       nothing else — no wheel, no drag, no keys — so: the network picker is a row of chips (a native
+       <select> renders no popup at all under offscreen CEF), every scrolling region carries a ▲/▼ pager,
+       and the search box is backed by an on-page keypad. The real <input> is kept because a pad or the
+       full-window desktop DOES forward keystrokes; the two stay in sync. -->
+  <main class="app">
+    <header class="topbar" id="topbar">
+      <div class="brand">
+        <span class="dot" id="linkDot"></span>
+        <div class="brandText">
+          <h1>Storage Terminal</h1>
+          <span class="sub" id="sub">Scanning network&hellip;</span>
+        </div>
+      </div>
+      <div class="netchips hidden" id="netChips"></div>
+    </header>
+
+    <!-- empty / no-network state -->
+    <section id="empty" class="empty">
+      <div class="empty-card">
+        <div class="empty-icon">&#9707;</div>
+        <p id="emptyMsg">Searching for a Refined Storage network&hellip;</p>
+      </div>
+    </section>
+
+    <!-- main terminal (built once state.ok) -->
+    <section id="content" class="content hidden">
+      <div class="main-col">
+        <div class="energybar" id="energybar">
+          <div class="buf-head">
+            <span>Network energy</span>
+            <span class="buf-val" id="energyVal">&mdash;</span>
+          </div>
+          <div class="bar"><div class="bar-fill" id="energyFill"></div></div>
+        </div>
+
+        <div class="stat-row" id="statRow"></div>
+
+        <div class="tabs">
+          <button class="tabbtn active" id="tabStorage" type="button" data-tab="storage">Storage</button>
+          <button class="tabbtn" id="tabCraft" type="button" data-tab="craft">Craftable</button>
+        </div>
+
+        <div class="searchRow" id="searchRow">
+          <input type="text" id="searchInput" placeholder="Search items&hellip;" autocomplete="off" spellcheck="false" maxlength="100">
+          <span class="searchCount" id="searchCount"></span>
+          <button class="keybtn" id="keysBtn" type="button">&#9000; Search</button>
+        </div>
+
+        <ul class="list" id="storageList"></ul>
+        <div class="pager" id="storagePager">
+          <button class="pg" type="button" id="stUp">&#9650;</button>
+          <span class="pgpos" id="stPos">0/0</span>
+          <button class="pg" type="button" id="stDn">&#9660;</button>
+        </div>
+
+        <ul class="list hidden" id="craftList"></ul>
+        <div class="pager hidden" id="craftPager">
+          <button class="pg" type="button" id="crUp">&#9650;</button>
+          <span class="pgpos" id="crPos">0/0</span>
+          <button class="pg" type="button" id="crDn">&#9660;</button>
+        </div>
+
+        <p class="none hidden" id="offlineNote">Selected network is offline.</p>
+      </div>
+
+      <aside class="side-col">
+        <div class="side-head">
+          <h2>Active tasks</h2>
+          <button class="linkbtn" id="cancelAllBtn" type="button">Cancel all</button>
+        </div>
+        <ul class="tasks" id="taskList"></ul>
+        <div class="pager" id="taskPager">
+          <button class="pg" type="button" id="tkUp">&#9650;</button>
+          <span class="pgpos" id="tkPos">0/0</span>
+          <button class="pg" type="button" id="tkDn">&#9660;</button>
+        </div>
+        <p class="none hidden" id="noTasks">No active crafting tasks.</p>
+
+        <div class="statusLine hidden" id="statusLine"></div>
+      </aside>
+    </section>
+
+    <!-- The keypad. Hidden until the Search button opens it; the key grid itself is built in client.js
+         (37 keys is 37 lines of markup nobody would ever read). It overlays the lists rather than pushing
+         them, because a 512x384 wall screen has no vertical room to hold both. -->
+    <div class="kp hidden" id="keypad">
+      <div class="kp-head">
+        <span class="kp-label">Search</span>
+        <span class="kp-q" id="kpQuery"></span>
+        <button class="kp-act" type="button" id="kpBack">&#9003;</button>
+        <button class="kp-act" type="button" id="kpClear">Clear</button>
+        <button class="kp-act kp-done" type="button" id="kpDone">Done</button>
+      </div>
+      <div class="kp-grid" id="kpGrid"></div>
+    </div>
+  </main>
+  <script src="client.js"></script>
+</body>
+</html>

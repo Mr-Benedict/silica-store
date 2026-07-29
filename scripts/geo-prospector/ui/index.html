@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prospector's Survey Room</title>
+<!-- style.css + client.js are siblings, inlined by the server bundler. -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ok:false — full-sheet placeholder shown instead of the board -->
+<div class="offsheet" id="offsheet"><div class="off-card">
+  <div class="off-mark">GEO<b>//</b>PROS</div>
+  <div class="off-tag">No survey signal</div>
+  <div class="off-reason" id="offReason">Awaiting link...</div>
+  <div class="off-rule"></div>
+  <div class="off-foot">Prospector's survey room &middot; Silica Path B</div>
+</div></div>
+
+<div class="sheet">
+
+<div class="rule">
+  <div class="mark">GEO<b>//</b>PROS</div>
+  <div class="tagline">Prospector's&nbsp;Survey</div>
+  <div class="spacer"></div>
+  <div class="meta">
+    <span>OP&nbsp;<b id="op">-</b></span>
+    <span>VEINS&nbsp;<b id="devCount">-</b></span>
+    <span class="link" id="link"><span class="dot"></span><span id="linkTxt">LINK LIVE</span></span>
+  </div>
+</div>
+
+<div class="board">
+
+<!-- ------------------------------- SCANNER (the pulse) ----------------------------- -->
+<section class="node scan" id="nScan">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">SCN</span><span class="n-name" id="sName">-</span>
+  <span class="n-state idle" id="sState"><span class="lamp"></span><span id="sStateTxt">-</span></span></div>
+<div class="chips" id="sChips"></div>
+<div class="n-body">
+  <div class="ph" id="sPh"><span>NO GEO SCANNER ON NET</span></div>
+  <div class="readrow">
+    <div class="read">
+      <div class="lbl">Sweep progress</div>
+      <div class="big"><b id="pProg">-</b><span class="unit">%</span></div>
+      <div class="sub"><span class="pip" id="pipScan">SWEEPING</span><span class="subtxt" id="sNote">-</span></div>
+    </div>
+    <div class="ring" id="ring">
+      <svg viewBox="0 0 100 100"><circle class="rt" cx="50" cy="50" r="40"></circle>
+      <circle class="rv" cx="50" cy="50" r="40" stroke-dasharray="251.3" stroke-dashoffset="251.3"></circle></svg>
+      <div class="cap"><b id="ringV">-</b><span id="ringL">radius</span></div>
+    </div>
+  </div>
+  <div class="tags">
+    <div class="tg"><span class="k">Radius</span><span class="v" id="tRadius">-</span></div>
+    <div class="tg"><span class="k">Range chip</span><span class="v" id="tChip">-</span></div>
+    <div class="tg"><span class="k">FE draw</span><span class="v" id="tFe">-</span></div>
+    <div class="tg"><span class="k">Buffer</span><span class="v" id="tEnergy">-</span></div>
+    <div class="tg"><span class="k">Cooldown</span><span class="v" id="tCool">-</span></div>
+    <div class="tg"><span class="k">Survey age</span><span class="v" id="tAge">-</span></div>
+    <div class="tg"><span class="k">Blocks found</span><span class="v" id="tHits">-</span></div>
+    <div class="tg"><span class="k">Veins</span><span class="v" id="tVeins">-</span></div>
+  </div>
+  <!-- the controls hug the bottom of the card (margin-top:auto) so a tall surface does not leave a void
+       between the readouts and the PULSE button -->
+  <div class="lower">
+    <div class="clampline" id="clampLine">-</div>
+    <div class="panel">
+      <div class="cb-head"><span>Looking for</span><b id="cfgPreset">-</b></div>
+      <div class="filterline" id="cfgFilter">-</div>
+      <div class="presets" id="presets"></div>
+    </div>
+    <div class="panel">
+      <div class="cb-head"><span>Scan radius</span><b id="rVal">-</b></div>
+      <div class="stepper">
+        <button class="sw" type="button" id="btnRMinus">&minus;4</button>
+        <button class="sw" type="button" id="btnRPlus">+4</button>
+        <button class="sw ghost" type="button" id="btnRMax">MAX</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="ctl"><button class="sw pulse" type="button" id="btnPulse">PULSE</button></div>
+</section>
+
+<!-- ------------------------------- SURVEY (the plots) ------------------------------ -->
+<section class="node srv" id="nSurvey">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">SRV</span><span class="n-name">Survey</span>
+  <span class="n-state idle" id="qState"><span class="lamp"></span><span id="qStateTxt">-</span></span></div>
+<div class="n-body">
+  <div class="ph" id="qPh"><span>NO SURVEY YET</span></div>
+  <div class="plots">
+    <div class="plot">
+      <div class="plbl">Plan &middot; XZ</div><div class="pmeta" id="planMeta">-</div>
+      <canvas id="planC"></canvas>
+    </div>
+    <div class="plot">
+      <div class="plbl">Section &middot; Y</div><div class="pmeta" id="secMeta">-</div>
+      <canvas id="secC"></canvas>
+    </div>
+  </div>
+  <div class="tags">
+    <div class="tg"><span class="k">Blocks</span><span class="v" id="qTotal">-</span></div>
+    <div class="tg"><span class="k">Veins</span><span class="v" id="qVeins">-</span></div>
+    <div class="tg"><span class="k">Swept</span><span class="v" id="qRadius">-</span></div>
+    <div class="tg"><span class="k">Age</span><span class="v" id="qAge">-</span></div>
+    <div class="tg"><span class="k">Skipped</span><span class="v" id="qSkip">-</span></div>
+    <div class="tg"><span class="k">Scanner</span><span class="v" id="qOrigin">-</span></div>
+  </div>
+</div>
+<div class="ctl"><button class="sw" type="button" id="btnMobs">MOBS: &mdash;</button></div>
+</section>
+
+<div class="col">
+
+<!-- ------------------------------- SHAFT ADVISOR ----------------------------------- -->
+<section class="node dpt grow" id="nDepth">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">DPT</span><span class="n-name">Shaft advisor</span>
+  <span class="n-state idle" id="dState"><span class="lamp"></span><span id="dStateTxt">-</span></span></div>
+<div class="n-body">
+  <div class="ph" id="dPh"><span>NO DEPTH DATA</span></div>
+  <div class="tiles">
+    <div class="tile"><div class="t-l">Dig at</div><div class="t-v" id="dY">-</div><div class="t-s">feet level</div></div>
+    <div class="tile"><div class="t-l">Yield</div><div class="t-v" id="dYield">-</div><div class="t-s">ore /100 dug</div></div>
+    <div class="tile"><div class="t-l">Band</div><div class="t-v" id="dBand">-</div><div class="t-s">exposed Y</div></div>
+    <div class="tile"><div class="t-l">Sample</div><div class="t-v" id="dHits">-</div><div class="t-s">ore in band</div></div>
+  </div>
+  <div class="plot grow">
+    <div class="plbl">Ore per Y</div><div class="pmeta" id="histMeta">-</div>
+    <canvas id="histC"></canvas>
+  </div>
+</div>
+</section>
+
+<!-- ------------------------------- VEIN TABLE -------------------------------------- -->
+<section class="node vein grow" id="nVein">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">VEI</span><span class="n-name">Veins</span>
+  <span class="n-state idle" id="vState"><span class="lamp"></span><span id="vStateTxt">-</span></span></div>
+<div class="n-body">
+  <div class="ph" id="vPh"><span>NOTHING FOUND</span></div>
+  <!-- the ONLY chip: the view filter made visible from the card whose contents it changes, and clearable
+       from there. Hidden entirely while no filter is held. NOT the scanner's scan filter — that one lives
+       in the SCN card as "Looking for" + its presets, a card away and a pulse away. -->
+  <div class="sortrow">
+    <button class="sw tiny" type="button" id="btnSortDist">NEAREST</button>
+    <button class="sw tiny" type="button" id="btnSortRare">RAREST</button>
+    <button class="sw tiny only" type="button" id="btnOnly"><span class="o-k">Only</span><span
+      class="o-n" id="onlyTxt">-</span><span class="o-x">&#10005;</span></button>
+    <span class="vrange" id="vRange">-</span>
+  </div>
+  <!-- SEARCH: free text, filtered as you type (no Enter needed), matched against each vein's block id AND its
+       displayed name. It COMPOSES with ONLY above — this is the free-text half, that one is the tally's
+       one-tap exact pick, and both stay visible and separately clearable.
+       Typed characters only reach an MCEF page from the SilicaOS desktop, a pad or a pocket computer; an
+       in-world wall screen forwards CLICKS ONLY, so there the box is a read-only display of the live query
+       (whoever set it) and the ✕ — a plain tap — is how it gets cleared. Hence the placeholder saying where
+       you can type: it is legible exactly on the surfaces where typing works. -->
+  <div class="searchrow">
+    <span class="sr-k">Search</span>
+    <input class="s-in" id="searchIn" type="text" maxlength="32" autocomplete="off" autocorrect="off"
+      autocapitalize="off" spellcheck="false" placeholder="block or mod id &mdash; type on desktop / pad">
+    <button class="sw tiny sclr" type="button" id="btnSearchClr" title="clear the search">&#10005;</button>
+  </div>
+  <!-- "Qty" is THIS vein's blocks; "Found" is how many of that ore the whole scan turned up, which is what
+       RAREST ranks by (E3P9-D22). Two different questions, so two columns. -->
+  <div class="rowhead"><span>Block</span><span class="c">Qty</span><span class="c">Dist</span>
+    <span class="c">Way</span><span class="c">Depth</span><span class="c">Found</span></div>
+  <div class="rows" id="rows"></div>
+  <div class="pager"><button class="pg" type="button" id="rowUp">&#9650;</button>
+    <span class="pgpos" id="rowPos">-</span>
+    <button class="pg" type="button" id="rowDn">&#9660;</button></div>
+</div>
+</section>
+
+</div>
+</div>
+
+<!-- ---------------------------------- annunciator foot ------------------------------ -->
+<div class="foot">
+<div class="foot-main">
+  <div class="statusbar">
+    <span class="st-lamp" id="stLamp"></span>
+    <span class="st-txt" id="stTxt">Standing by...</span>
+    <span class="spacer"></span>
+    <span class="tbcell">Refresh<b>1.0 s</b></span>
+    <span class="tbcell">Frame<b id="tbFrame">-</b></span>
+    <span class="tbcell clock">Sys&nbsp;Time<b id="clock">--:--:--</b></span>
+  </div>
+  <!-- Entries WRAP, so most of a busy list sits off-screen — and neither a wall screen (tap-only) nor
+       MCEF (no wheel event forwarded) can scroll it. Hence the explicit page buttons on every list. -->
+  <div class="annun">
+    <div class="ablock">
+      <div class="ab-head">Advisories <b id="alCount">0</b><span class="ab-pos" id="alPos">-</span></div>
+      <div class="alist" id="alarms"></div>
+      <div class="pager"><button class="pg" type="button" id="alUp">&#9650;</button><button class="pg" type="button" id="alDn">&#9660;</button></div>
+    </div>
+    <!-- the tally doubles as the ONLY picker: every row is a button, so it needs to SAY it is one — a wall
+         screen has no hover to discover it with. -->
+    <div class="ablock">
+      <div class="ab-head">Tally <b id="tlCount">0</b><span class="ab-hint">tap&nbsp;=&nbsp;only</span><span class="ab-pos" id="tlPos">-</span></div>
+      <div class="alist" id="tally"></div>
+      <div class="pager"><button class="pg" type="button" id="tlUp">&#9650;</button><button class="pg" type="button" id="tlDn">&#9660;</button></div>
+    </div>
+    <div class="ablock">
+      <div class="ab-head">Site log <b id="siCount">0</b><span class="ab-pos" id="siPos">-</span></div>
+      <div class="loglist" id="sites"></div>
+      <div class="pager"><button class="pg" type="button" id="siUp">&#9650;</button><button class="pg" type="button" id="siDn">&#9660;</button></div>
+    </div>
+  </div>
+</div>
+<div class="masterwrap">
+  <div class="walk" id="walk">
+    <div class="w-top">WALK TO</div>
+    <div class="rose">
+      <svg viewBox="0 0 100 100">
+        <circle class="rr" cx="50" cy="50" r="43"></circle>
+        <circle class="rr2" cx="50" cy="50" r="30"></circle>
+        <line class="rt2" x1="50" y1="4" x2="50" y2="12"></line>
+        <line class="rt2" x1="96" y1="50" x2="88" y2="50"></line>
+        <line class="rt2" x1="50" y1="96" x2="50" y2="88"></line>
+        <line class="rt2" x1="4" y1="50" x2="12" y2="50"></line>
+        <g class="needle" id="needle">
+          <polygon points="50,9 55.5,52 50,45 44.5,52"></polygon>
+          <circle cx="50" cy="50" r="3.4"></circle>
+        </g>
+      </svg>
+      <div class="rose-n">N</div>
+      <div class="rose-cap" id="wCard">&mdash;</div>
+    </div>
+    <div class="w-rows">
+      <div class="wr"><span>Bearing</span><b id="wBear">&mdash;</b></div>
+      <div class="wr"><span>Distance</span><b id="wDist">&mdash;</b></div>
+      <div class="wr"><span>Depth</span><b id="wDepth">&mdash;</b></div>
+    </div>
+    <div class="w-block" id="wBlock">no vein focused</div>
+  </div>
+</div>
+</div>
+
+</div>
+
+<script src="client.js"></script>
+</body>
+</html>

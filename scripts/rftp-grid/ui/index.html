@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RFTools Power Grid</title>
+  <!-- Sibling files, served over silica:// alongside this page (folded in by the inline-bundler). -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar" id="topbar">
+      <div class="brand">
+        <span class="dot" id="linkDot"></span>
+        <div class="brandText">
+          <h1>Power Grid Monitor</h1>
+          <span class="sub" id="sub">Scanning network…</span>
+        </div>
+      </div>
+      <div class="totals" id="totals">
+        <div class="tot"><b id="totStored">—</b><span>stored</span></div>
+        <div class="tot"><b id="totCap">—</b><span>capacity</span></div>
+        <div class="tot"><b id="totGen">—</b><span>generation</span></div>
+      </div>
+    </header>
+
+    <!-- empty / no-devices state -->
+    <section id="empty" class="empty">
+      <div class="empty-card">
+        <div class="empty-icon">&#9889;</div>
+        <p id="emptyMsg">Searching for RFTools Power blocks&hellip;</p>
+      </div>
+    </section>
+
+    <!-- Two-column dashboard (cards built by client.js). Each column carries its own pager: a wall screen
+         forwards only mouse press and release — no wheel, no drag — so everything past the first
+         screenful of cards is unreachable there without one. -->
+    <section id="content" class="content hidden">
+      <div class="col">
+        <h2>Networks</h2>
+        <div id="networks" class="cards"></div>
+        <p class="none hidden" id="noNetworks">No cell networks reachable right now.</p>
+        <div class="pager">
+          <button class="pg" type="button" id="netUp">&#9650;</button>
+          <span class="pgpos" id="netPos">0/0</span>
+          <button class="pg" type="button" id="netDn">&#9660;</button>
+        </div>
+      </div>
+      <div class="col">
+        <h2>Generators</h2>
+        <div id="generators" class="cards"></div>
+        <p class="none hidden" id="noGenerators">No generators reachable right now.</p>
+        <div class="pager">
+          <button class="pg" type="button" id="genUp">&#9650;</button>
+          <span class="pgpos" id="genPos">0/0</span>
+          <button class="pg" type="button" id="genDn">&#9660;</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="client.js"></script>
+</body>
+</html>

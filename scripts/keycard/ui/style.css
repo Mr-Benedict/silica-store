@@ -1,0 +1,313 @@
+/* ACCESS CONTROL — a live security desk for Silica Keycard Readers + Secure Doors. Sibling sheet of
+   reactor-control / builder-control: same drafting language (near-black paper, warm ivory ink, corner
+   ticks, annunciator foot), with the KEYCARD family's own colours so the page matches the blocks it
+   drives — locked red, unlocked green, armed teal, unpaired amber-gold, gunmetal body.
+   Fixed + non-scrolling (html/body overflow:hidden, grid/flex everywhere); every dimension in rem off ONE
+   viewport-derived root, so the sheet scales as a unit from a 512x384 wall screen to a full-window pocket
+   render. System fonts + inline SVG, no assets. */
+:root{
+  --paper:#070809;
+  --body:#3A3F47;                /* the keycard family's gunmetal housing */
+  --ink:#efe6d2;
+  --dim:rgba(239,230,210,.5);
+  --faint:rgba(239,230,210,.13);
+  --locked:#E0574F;
+  --unlocked:#5FE08A;
+  --armed:#4FD6C0;
+  --unpaired:#E0A83C;
+  --stencil:"Bahnschrift","DIN Condensed","DIN Alternate","Haettenschweiler","Impact",system-ui,sans-serif;
+  --mono:"SFMono-Regular","Consolas","Roboto Mono",ui-monospace,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);
+  font:1rem/1.35 var(--mono);-webkit-user-select:none;user-select:none;}
+/* THE single scaling knob — and it has to come AFTER the `font:` shorthand above. `font:1rem/1.35` also
+   sets font-size, and on the ROOT element `1rem` resolves against font-size's INITIAL value (16px, CSS
+   Values 4 §5.1.1), so a clamp written before the shorthand is silently overridden and the sheet stops
+   scaling entirely — it then lays out at a 16px root and overflows a 512x384 wall screen. */
+html{font-size:clamp(6.5px,1.9vmin,13.5px);}
+button{font-family:var(--mono);}
+/* one truncation utility — a label that outgrows its cell clips with an ellipsis.
+   NOTE: .ev (log entries) is deliberately NOT here — an access record you cannot finish reading is useless. */
+.tagline,.n-name,.subtxt,.cb-head b,.tg .k,.tg .v,.t-l,.t-v,.t-s,.st-txt,.m-top,.m-big,.m-sub,.sw,
+.read .lbl,.read .big b,.rd-name,.rd-why,.card-id,.rd-head,.hint{white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;min-width:0;}
+.hint,.rd-why{white-space:normal;}
+.lamp,.dot{width:.62rem;height:.62rem;border-radius:50%;background:currentColor;
+  box-shadow:0 0 .6rem currentColor;flex:none;}
+/* drafting grid + vignette */
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:
+  linear-gradient(rgba(239,230,210,.045) 1px,transparent 1px) 0 0/2.2rem 2.2rem,
+  linear-gradient(90deg,rgba(239,230,210,.045) 1px,transparent 1px) 0 0/2.2rem 2.2rem,
+  linear-gradient(rgba(239,230,210,.065) 1px,transparent 1px) 0 0/11rem 11rem,
+  linear-gradient(90deg,rgba(239,230,210,.065) 1px,transparent 1px) 0 0/11rem 11rem;}
+body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;
+  background:radial-gradient(130% 110% at 50% 40%,transparent 55%,rgba(0,0,0,.62) 100%);}
+.sheet{position:relative;z-index:1;height:100%;display:grid;grid-template-rows:auto 1fr auto;
+  gap:.65rem;padding:.9rem 1rem;min-height:0;}
+
+/* --- header rule --- */
+.rule{display:flex;align-items:flex-end;gap:1.1rem;border-bottom:1px solid var(--faint);
+  padding-bottom:.55rem;min-width:0;}
+.mark{font-family:var(--stencil);font-size:1.75rem;line-height:.9;letter-spacing:.15rem;
+  text-transform:uppercase;white-space:nowrap;}
+.mark b{color:var(--locked);font-weight:inherit;}
+.tagline{font-size:.78rem;letter-spacing:.22rem;text-transform:uppercase;color:var(--dim);}
+.spacer{flex:1;min-width:0;}
+.meta{display:flex;align-items:center;gap:1.2rem;font-size:.82rem;text-transform:uppercase;
+  color:var(--dim);white-space:nowrap;}
+.meta b{color:var(--ink);letter-spacing:.14rem;}
+.link{display:flex;align-items:center;gap:.5rem;color:var(--armed);}
+.link .dot{animation:blink 1.6s ease-in-out infinite;}
+.link.down{color:var(--locked);}
+.link.down .dot{animation:none;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* --- instrument board --- */
+.board{min-height:0;min-width:0;overflow:hidden;display:grid;grid-template-columns:1.15fr .95fr 1.1fr;gap:.6rem;}
+.node{position:relative;display:flex;flex-direction:column;padding:.85rem .9rem;min-width:0;min-height:0;
+  border:1px solid var(--faint);background:rgba(11,13,17,.92);box-shadow:0 2px 1.6rem rgba(0,0,0,.5);
+  overflow:hidden;}
+.node.door{--ac:var(--locked);}
+.node.door.open{--ac:var(--unlocked);}
+.node.door.none{--ac:var(--unpaired);}
+.node.roster{--ac:var(--unpaired);}
+.node.log{--ac:var(--armed);}
+.node::before,.node::after,.node .tr,.node .bl{content:"";position:absolute;width:1rem;height:1rem;
+  pointer-events:none;z-index:3;border:0 solid var(--ac);}
+.node::before{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+.node::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+.node .tr{top:-1px;right:-1px;border-width:2px 2px 0 0;}
+.node .bl{bottom:-1px;left:-1px;border-width:0 0 2px 2px;}
+.n-head{display:flex;align-items:baseline;gap:.65rem;border-bottom:1px dashed var(--faint);
+  padding-bottom:.45rem;margin-bottom:.5rem;flex:none;min-width:0;}
+.n-tag{font-size:.8rem;color:var(--ac);border:1px solid var(--ac);padding:0 .4rem;border-radius:2px;flex:none;}
+.n-name{font-family:var(--stencil);font-size:1.35rem;letter-spacing:.1rem;text-transform:uppercase;flex:1;}
+.n-state{font-size:.76rem;letter-spacing:.12rem;text-transform:uppercase;display:flex;align-items:center;
+  gap:.4rem;color:var(--dim);flex:none;}
+.n-state.lock{color:var(--locked);}
+.n-state.open{color:var(--unlocked);}
+.n-state.armed{color:var(--armed);}
+.n-state.none{color:var(--unpaired);}
+.n-state.armed .lamp,.n-state.none .lamp{animation:blink 1.4s ease-in-out infinite;}
+.n-body{position:relative;flex:1;min-height:0;min-width:0;overflow:hidden;display:flex;
+  flex-direction:column;gap:.5rem;}
+.ph{display:none;position:absolute;inset:0;z-index:5;align-items:center;justify-content:center;
+  text-align:center;border:1px dashed var(--faint);background:rgba(7,8,9,.94);padding:.8rem;overflow:hidden;}
+.ph.on{display:flex;}
+.ph span{font-size:.85rem;letter-spacing:.16rem;text-transform:uppercase;color:var(--dim);}
+
+/* --- door selector chips --- */
+.chips{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.5rem;flex:none;overflow:hidden;max-height:3.4rem;}
+.chips.hide{display:none;}
+.chip-b{display:flex;align-items:center;gap:.35rem;cursor:pointer;background:transparent;
+  border:1px solid var(--faint);color:var(--dim);font-family:var(--mono);font-size:.76rem;
+  text-transform:uppercase;padding:.15rem .45rem;border-radius:2px;max-width:9rem;overflow:hidden;}
+.chip-b .cl{width:.5rem;height:.5rem;border-radius:50%;background:currentColor;
+  box-shadow:0 0 .45rem currentColor;flex:none;}
+.chip-b.sel{border-color:var(--ac);color:var(--ink);background:rgba(239,230,210,.06);}
+.chip-b.st-lock{color:var(--locked);}
+.chip-b.st-open{color:var(--unlocked);}
+.chip-b.st-armed{color:var(--armed);}
+.chip-b.st-none{color:var(--unpaired);}
+.chip-b:active{transform:translateY(1px);}
+
+/* --- hero: the padlock + the state word --- */
+.hero{display:flex;align-items:center;gap:.9rem;flex:none;min-width:0;}
+.bolt{width:5.2rem;height:5.2rem;flex:none;border:1px solid var(--faint);background:rgba(58,63,71,.28);
+  padding:.35rem;position:relative;}
+.bolt svg{width:100%;height:100%;display:block;}
+.bolt .body{fill:var(--body);stroke:var(--ac);stroke-width:2.5;}
+.bolt .shackle{fill:none;stroke:var(--ac);stroke-width:8;stroke-linecap:round;
+  transition:transform .35s cubic-bezier(.3,1.4,.5,1);transform-origin:67px 46px;}
+/* Open = the shackle swings CLEAR of the body, pivoting on the right leg's base (the transform-origin
+   above). The rotation must be POSITIVE: with SVG's y-down axes a negative angle swings the free left leg
+   DOWNWARD into the body, which is why the first cut read as "the curved bit just tilts a few degrees" —
+   it was rotating the wrong way, and only far enough to look like a glitch. +52deg lifts the left leg clear
+   above the body's top edge (y=44) and reads unmistakably as an open padlock. */
+.bolt.unlocked .shackle{transform:translateY(-4px) rotate(52deg);}
+.bolt .pin{fill:var(--ac);}
+.bolt.live{box-shadow:inset 0 0 1.6rem rgba(224,87,79,.25);}
+.bolt.unlocked.live{box-shadow:inset 0 0 1.6rem rgba(95,224,138,.25);}
+.bolt.flash{animation:boltflash .5s ease-out;}
+@keyframes boltflash{0%{box-shadow:inset 0 0 0 rgba(255,255,255,0)}30%{box-shadow:inset 0 0 2.4rem rgba(255,255,255,.5)}100%{box-shadow:inset 0 0 0 rgba(255,255,255,0)}}
+.read{flex:1;min-width:0;overflow:hidden;}
+.read .lbl{font-size:.72rem;letter-spacing:.16rem;text-transform:uppercase;color:var(--dim);}
+.read .big{display:flex;align-items:baseline;gap:.5rem;min-width:0;}
+.read .big b{font-family:var(--stencil);font-size:2.6rem;line-height:1;color:var(--ac);font-weight:400;
+  letter-spacing:.06rem;}
+.read .sub{display:flex;align-items:center;gap:.4rem;margin-top:.2rem;min-width:0;flex-wrap:wrap;}
+.subtxt{font-size:.75rem;letter-spacing:.08rem;text-transform:uppercase;color:var(--dim);}
+.pip{font-size:.68rem;letter-spacing:.12rem;border:1px solid var(--faint);color:rgba(239,230,210,.26);
+  padding:0 .32rem;border-radius:2px;flex:none;}
+.pip.on{color:var(--unlocked);border-color:var(--unlocked);box-shadow:0 0 .6rem rgba(95,224,138,.3);}
+.pip.arm.on{color:var(--armed);border-color:var(--armed);box-shadow:0 0 .6rem rgba(79,214,192,.35);
+  animation:blink 1.5s ease-in-out infinite;}
+
+/* --- controls --- */
+.ctl{margin-top:.1rem;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:.4rem;flex:none;}
+.sw{cursor:pointer;font-size:.82rem;font-weight:700;letter-spacing:.08rem;text-transform:uppercase;
+  color:var(--ink);background:transparent;border:1px solid var(--faint);padding:.34rem .3rem;
+  border-radius:2px;transition:background .1s,border-color .12s,color .12s;}
+.sw:hover:not(:disabled){border-color:var(--ac);color:var(--ac);}
+.sw:active:not(:disabled){background:var(--ac);color:#06090d;transform:translateY(1px);}
+.sw:disabled{opacity:.26;cursor:default;}
+.sw.go{border-color:rgba(95,224,138,.5);color:var(--unlocked);}
+.sw.go:active:not(:disabled){background:var(--unlocked);color:#04230f;}
+.sw.stop{border-color:rgba(224,87,79,.55);color:var(--locked);}
+.sw.stop:active:not(:disabled){background:var(--locked);color:#2a0906;}
+
+.panel{border:1px solid var(--faint);padding:.45rem .5rem;flex:none;background:rgba(6,7,9,.55);min-width:0;}
+.cb-head{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem;font-size:.72rem;
+  letter-spacing:.14rem;text-transform:uppercase;color:var(--dim);margin-bottom:.35rem;min-width:0;}
+.cb-head.mt{margin-top:.5rem;}
+.cb-head b{font-size:.95rem;color:var(--ink);}
+/* auto-lock: -/+ steppers over the KeycardLogic ladder, plus tappable presets. No <input type=range>:
+   native drag does not survive the MC->CEF forwarding on either surface. */
+.stepper{display:flex;align-items:center;gap:.35rem;min-width:0;}
+.step{cursor:pointer;flex:none;width:1.7rem;height:1.5rem;line-height:1;font-size:1rem;color:var(--ink);
+  background:transparent;border:1px solid var(--faint);border-radius:2px;}
+.step:hover:not(:disabled){border-color:var(--ac);color:var(--ac);}
+.step:active:not(:disabled){background:var(--ac);color:#06090d;}
+.step:disabled{opacity:.26;cursor:default;}
+.ladder{flex:1;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:.22rem;min-width:0;}
+.rung{cursor:pointer;font-family:var(--mono);font-size:.7rem;padding:.2rem 0;color:var(--dim);
+  background:transparent;border:1px solid var(--faint);border-radius:2px;overflow:hidden;}
+.rung.on{border-color:var(--ac);color:var(--ink);background:rgba(239,230,210,.07);}
+.rung:disabled{opacity:.3;cursor:default;}
+.toggle{display:flex;align-items:center;gap:.45rem;cursor:pointer;border:1px solid var(--faint);
+  border-radius:2px;padding:.22rem .45rem;color:var(--dim);font-size:.78rem;letter-spacing:.1rem;
+  text-transform:uppercase;}
+.toggle .tg-lamp{width:.55rem;height:.55rem;border-radius:50%;background:currentColor;flex:none;}
+.toggle.on{color:var(--unlocked);border-color:rgba(95,224,138,.45);}
+.toggle.on .tg-lamp{box-shadow:0 0 .55rem currentColor;}
+.toggle.dis{opacity:.3;cursor:default;}
+
+.tags{display:grid;gap:.28rem;flex:none;min-width:0;}
+.tags.two{grid-template-columns:1fr 1fr;}
+.tg{display:flex;justify-content:space-between;gap:.4rem;border-bottom:1px dotted var(--faint);
+  padding-bottom:.14rem;min-width:0;}
+.tg .k{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06rem;}
+.tg .v{font-size:.8rem;color:var(--ink);}
+
+/* --- readers on the selected door --- */
+.readers{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;gap:.25rem;}
+.rd-head{font-size:.72rem;letter-spacing:.14rem;text-transform:uppercase;color:var(--dim);flex:none;
+  display:flex;gap:.4rem;align-items:baseline;}
+.rd-note{color:rgba(239,230,210,.3);letter-spacing:0;text-transform:none;font-size:.68rem;flex:1;
+  overflow:hidden;text-overflow:ellipsis;}
+.rdlist{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:.2rem;}
+.rd{display:flex;align-items:center;gap:.4rem;border:1px solid var(--faint);padding:.16rem .35rem;
+  min-width:0;flex:none;background:rgba(58,63,71,.16);}
+.rd .lamp{width:.5rem;height:.5rem;}
+.rd.lock{color:var(--locked);}
+.rd.open{color:var(--unlocked);}
+.rd.armed{color:var(--armed);}
+.rd.none{color:var(--unpaired);}
+.rd.bad{color:var(--locked);border-style:dashed;}
+.rd-name{flex:1;font-size:.78rem;color:var(--ink);}
+.rd-st{font-size:.66rem;letter-spacing:.1rem;text-transform:uppercase;flex:none;}
+.rd-why{font-size:.66rem;color:var(--dim);width:100%;line-height:1.25;}
+
+/* --- roster + log lists --- */
+.tiles{display:grid;gap:.3rem;flex:none;}
+.tiles.three{grid-template-columns:1fr 1fr 1fr;}
+.tile{border:1px solid var(--faint);padding:.28rem .4rem;min-width:0;background:rgba(6,7,9,.5);}
+.t-l{font-size:.66rem;letter-spacing:.12rem;text-transform:uppercase;color:var(--dim);}
+.t-v{font-family:var(--stencil);font-size:1.5rem;line-height:1.05;color:var(--ink);}
+.tile.ok .t-v{color:var(--unlocked);}
+.tile.bad .t-v{color:var(--locked);}
+.t-s{font-size:.62rem;color:rgba(239,230,210,.32);text-transform:uppercase;letter-spacing:.06rem;}
+.listbox{flex:1 1 auto;min-height:0;overflow:hidden;border:1px solid var(--faint);
+  background:rgba(6,7,9,.5);padding:.22rem;display:flex;flex-direction:column;gap:.18rem;}
+.listbox.grow{flex:1 1 100%;}
+/* card row: a hashed-hue initials chip stands in for the item sprite — CEF cannot render MC item
+   textures, so an honest generated chip beats a fake one (the Collector/rs-terminal convention). */
+.card{display:flex;align-items:center;gap:.4rem;padding:.14rem .25rem;min-width:0;flex:none;
+  border-left:2px solid transparent;}
+.card.owner{border-left-color:var(--unpaired);}
+.card.normal{border-left-color:rgba(239,230,210,.22);}
+.hue{width:1.25rem;height:1.25rem;flex:none;border-radius:2px;display:flex;align-items:center;
+  justify-content:center;font-size:.58rem;font-weight:700;color:#0a0b0d;letter-spacing:-.02rem;}
+.card-id{flex:1;font-size:.78rem;color:var(--ink);letter-spacing:.04rem;}
+/* No recorded enroller (a card from before the server stored one): the fallback code is dimmed and
+   monospaced so it reads as a machine label rather than a person's name. */
+.card-id.anon{color:var(--dim);font-family:inherit;letter-spacing:.08rem;}
+.tier{font-size:.62rem;letter-spacing:.1rem;text-transform:uppercase;border:1px solid var(--faint);
+  padding:0 .28rem;border-radius:2px;color:var(--dim);flex:none;}
+.tier.owner{color:var(--unpaired);border-color:rgba(224,168,60,.5);}
+.rv{cursor:pointer;flex:none;font-family:var(--mono);font-size:.62rem;letter-spacing:.08rem;
+  color:var(--dim);background:transparent;border:1px solid var(--faint);border-radius:2px;padding:0 .3rem;}
+.rv:hover:not(:disabled){color:var(--locked);border-color:var(--locked);}
+.rv:active:not(:disabled){background:var(--locked);color:#2a0906;}
+.rv:disabled{opacity:.25;cursor:default;}
+.none-row{font-size:.72rem;color:var(--dim);letter-spacing:.1rem;text-transform:uppercase;padding:.3rem;
+  text-align:center;}
+/* access-log entry: WRAPS (never clipped), newest first */
+.ev{display:flex;align-items:baseline;gap:.4rem;font-size:.74rem;line-height:1.3;padding:.12rem .22rem;
+  border-left:2px solid transparent;flex:none;min-width:0;}
+.ev.ok{border-left-color:var(--unlocked);}
+.ev.bad{border-left-color:var(--locked);background:rgba(224,87,79,.07);}
+.ev .ts{color:rgba(239,230,210,.35);flex:none;font-size:.68rem;}
+.ev .vd{flex:none;font-size:.66rem;letter-spacing:.08rem;text-transform:uppercase;}
+.ev.ok .vd{color:var(--unlocked);}
+.ev.bad .vd{color:var(--locked);}
+.ev .who{flex:1;min-width:0;color:var(--ink);word-break:break-word;}
+.ev .rdr{color:var(--dim);}
+.ev.fresh{animation:evflash 1.2s ease-out;}
+@keyframes evflash{0%{background:rgba(239,230,210,.22)}100%{background:transparent}}
+/* paging buttons: MCEF forwards no wheel and a wall screen is tap-only, so an overflow list needs
+   explicit page controls or it is simply unreachable. */
+.pager{display:flex;align-items:center;gap:.28rem;flex:none;}
+.pg-pos{flex:1;font-size:.66rem;color:rgba(239,230,210,.32);letter-spacing:.08rem;overflow:hidden;
+  white-space:nowrap;}
+.pg{cursor:pointer;flex:none;min-width:1.7rem;height:1.35rem;font-size:.7rem;color:var(--ink);
+  background:transparent;border:1px solid var(--faint);border-radius:2px;}
+.pg.wide{padding:0 .4rem;font-size:.62rem;letter-spacing:.08rem;color:var(--dim);}
+.pg:hover:not(:disabled){border-color:var(--ac);color:var(--ac);}
+.pg:active:not(:disabled){background:var(--ac);color:#06090d;}
+.pg:disabled{opacity:.25;cursor:default;}
+.hint{font-size:.66rem;color:rgba(239,230,210,.3);line-height:1.3;flex:none;}
+.hint code{color:var(--dim);}
+
+/* --- annunciator foot --- */
+.foot{display:flex;gap:.6rem;align-items:stretch;flex:none;min-width:0;}
+.foot-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:.35rem;
+  border-top:1px solid var(--faint);padding-top:.5rem;}
+.statusbar{display:flex;align-items:center;gap:.5rem;min-width:0;}
+.st-lamp{width:.6rem;height:.6rem;border-radius:50%;background:rgba(239,230,210,.25);flex:none;}
+.st-lamp.ok{background:var(--unlocked);box-shadow:0 0 .6rem var(--unlocked);}
+.st-lamp.err{background:var(--locked);box-shadow:0 0 .6rem var(--locked);}
+.st-txt{font-size:.78rem;color:var(--ink);flex:0 1 auto;min-width:0;}
+.st-txt.err{color:var(--locked);}
+.tbcell{font-size:.68rem;letter-spacing:.1rem;text-transform:uppercase;color:var(--dim);flex:none;
+  display:flex;gap:.35rem;}
+.tbcell b{color:var(--ink);}
+.banner{font-size:.72rem;line-height:1.3;color:var(--unpaired);border:1px dashed rgba(224,168,60,.4);
+  padding:.22rem .4rem;display:none;}
+.banner.on{display:block;}
+.banner.crit{color:var(--locked);border-color:rgba(224,87,79,.45);}
+.masterwrap{flex:none;display:flex;flex-direction:column;gap:.3rem;justify-content:flex-end;width:9.5rem;}
+.master{position:relative;cursor:pointer;overflow:hidden;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.02rem;padding:.4rem .3rem;color:var(--locked);
+  background:rgba(224,87,79,.07);border:1px solid rgba(224,87,79,.5);border-radius:3px;}
+.master:active:not(:disabled){background:var(--locked);color:#2a0906;transform:translateY(1px);}
+.master:disabled{opacity:.3;cursor:default;}
+.m-hz{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(-45deg,
+  rgba(224,87,79,.13) 0 .5rem,transparent .5rem 1rem);}
+.m-top{font-size:.62rem;letter-spacing:.2rem;text-transform:uppercase;opacity:.75;}
+.m-big{font-family:var(--stencil);font-size:1.35rem;line-height:.92;letter-spacing:.12rem;}
+.m-sub{font-size:.6rem;color:var(--dim);letter-spacing:.06rem;}
+
+/* --- ok:false placeholder sheet --- */
+.offsheet{display:none;position:fixed;inset:0;z-index:80;align-items:center;justify-content:center;
+  background:var(--paper);padding:1.5rem;}
+.offsheet.on{display:flex;}
+.off-card{text-align:center;max-width:34rem;}
+.off-mark{font-family:var(--stencil);font-size:2.6rem;letter-spacing:.2rem;text-transform:uppercase;}
+.off-mark b{color:var(--locked);font-weight:inherit;}
+.off-tag{font-size:.86rem;letter-spacing:.24rem;text-transform:uppercase;color:var(--unpaired);
+  margin-top:.35rem;}
+.off-reason{font-size:.86rem;line-height:1.5;color:var(--dim);margin-top:.9rem;}
+.off-rule{height:1px;background:var(--faint);margin:1.1rem 0 .6rem;}
+.off-foot{font-size:.68rem;letter-spacing:.16rem;text-transform:uppercase;color:rgba(239,230,210,.28);}

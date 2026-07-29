@@ -1,0 +1,19 @@
+{
+  "id": "geo-prospector",
+  "title": "Geo Prospector",
+  "summary": "Geo Scanner survey room: veins ranked by scarcity, ore per Y level, and a shaft advisor",
+  "kind": "app",
+  "category": "mining",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "network",
+      "web",
+      "geo"
+    ],
+    "parts": [
+      "gpu",
+      "nic"
+    ]
+  }
+}

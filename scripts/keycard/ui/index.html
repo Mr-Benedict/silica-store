@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Access Control</title>
+<!-- style.css + client.js are siblings, inlined by the server bundler. -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ok:false — full-sheet placeholder shown instead of the board -->
+<div class="offsheet" id="offsheet"><div class="off-card">
+  <div class="off-mark">SEC<b>//</b>CTRL</div>
+  <div class="off-tag" id="offTag">No reader on the net</div>
+  <div class="off-reason" id="offReason">Awaiting link...</div>
+  <div class="off-rule"></div>
+  <div class="off-foot">Access control &middot; Silica Path B</div>
+</div></div>
+
+<div class="sheet">
+
+<div class="rule">
+  <div class="mark">SEC<b>//</b>CTRL</div>
+  <div class="tagline">Access&nbsp;Control</div>
+  <div class="spacer"></div>
+  <div class="meta">
+    <span>DOORS&nbsp;<b id="mDoors">-</b></span>
+    <span>READERS&nbsp;<b id="mReaders">-</b></span>
+    <span class="link" id="link"><span class="dot"></span><span id="linkTxt">LINK LIVE</span></span>
+  </div>
+</div>
+
+<div class="board">
+
+<!-- ---------------------------------- DOOR (the selected group) --------------------- -->
+<section class="node door" id="nDoor">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">DOR</span><span class="n-name" id="dName">-</span>
+  <span class="n-state idle" id="dState"><span class="lamp"></span><span id="dStateTxt">-</span></span></div>
+<div class="chips" id="dChips"></div>
+<div class="n-body">
+  <div class="ph" id="dPh"><span>NO DOOR SELECTED</span></div>
+
+  <div class="hero">
+    <div class="bolt" id="bolt">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <rect class="body" x="20" y="44" width="60" height="46" rx="5"></rect>
+        <path class="shackle" id="shackle" d="M33 46 V30 a17 17 0 0 1 34 0 V46"></path>
+        <circle class="pin" cx="50" cy="63" r="6"></circle>
+        <rect class="pin" x="47" y="63" width="6" height="16" rx="3"></rect>
+      </svg>
+    </div>
+    <div class="read">
+      <div class="lbl">Door state</div>
+      <div class="big"><b id="dBig">-</b></div>
+      <div class="sub">
+        <span class="pip" id="pipOpen">LEAF OPEN</span>
+        <span class="pip" id="pipArmed">PAIRING ARMED</span>
+        <span class="subtxt" id="dNote">-</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ctl two">
+    <button class="sw go" type="button" id="btnUnlock">UNLOCK</button>
+    <button class="sw stop" type="button" id="btnLock">LOCK</button>
+  </div>
+
+  <div class="panel">
+    <div class="cb-head"><span>Auto-lock</span><b id="alVal">-</b></div>
+    <!-- Steppers, not a slider: native range drag doesn't survive the MC->CEF forwarding. -->
+    <div class="stepper">
+      <button class="step" type="button" id="alMinus">&minus;</button>
+      <div class="ladder" id="ladder"></div>
+      <button class="step" type="button" id="alPlus">+</button>
+    </div>
+    <div class="cb-head mt"><span>Auto-open on unlock</span></div>
+    <div class="toggle" id="autoOpen"><span class="tg-lamp"></span><span class="tg-txt" id="autoOpenTxt">OFF</span></div>
+  </div>
+
+  <div class="tags two">
+    <div class="tg"><span class="k">Readers</span><span class="v" id="tReaders">-</span></div>
+    <div class="tg"><span class="k">Cards</span><span class="v" id="tCards">-</span></div>
+  </div>
+
+  <div class="readers">
+    <div class="rd-head">Readers on this door <span class="rd-note" id="grpNote"></span></div>
+    <div class="rdlist" id="rdlist"></div>
+  </div>
+</div>
+</section>
+
+<!-- ---------------------------------- ROSTER --------------------------------------- -->
+<section class="node roster" id="nRoster">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">KEY</span><span class="n-name">Card roster</span>
+  <span class="n-state idle" id="rState"><span class="lamp"></span><span id="rStateTxt">-</span></span></div>
+<div class="n-body">
+  <div class="ph" id="rPh"><span>NO CARDS ENROLLED</span></div>
+  <div class="tiles three">
+    <div class="tile"><div class="t-l">Owner</div><div class="t-v" id="cOwner">-</div><div class="t-s">may administer</div></div>
+    <div class="tile"><div class="t-l">Normal</div><div class="t-v" id="cNormal">-</div><div class="t-s">may unlock</div></div>
+    <div class="tile"><div class="t-l">Total</div><div class="t-v" id="cTotal">-</div><div class="t-s">on this door</div></div>
+  </div>
+  <div class="listbox" id="cardbox"></div>
+  <div class="pager"><span class="pg-pos" id="cardPos">-</span>
+    <button class="pg" type="button" id="cardUp">&#9650;</button>
+    <button class="pg" type="button" id="cardDn">&#9660;</button></div>
+  <div class="hint">Cards are enrolled at the block, never from a script &mdash; there is no
+    <code>pair</code> verb. Revoke only ever reduces access.</div>
+</div>
+</section>
+
+<!-- ---------------------------------- ACCESS LOG ----------------------------------- -->
+<section class="node log" id="nLog">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">LOG</span><span class="n-name">Access log</span>
+  <span class="n-state idle" id="lState"><span class="lamp"></span><span id="lStateTxt">LIVE</span></span></div>
+<div class="n-body">
+  <div class="tiles three">
+    <div class="tile ok"><div class="t-l">Granted</div><div class="t-v" id="nOk">0</div><div class="t-s">this session</div></div>
+    <div class="tile bad"><div class="t-l">Denied</div><div class="t-v" id="nBad">0</div><div class="t-s">this session</div></div>
+    <div class="tile"><div class="t-l">Swipes</div><div class="t-v" id="nAll">0</div><div class="t-s">total seen</div></div>
+  </div>
+  <div class="listbox grow" id="logbox"></div>
+  <div class="pager"><span class="pg-pos" id="logPos">-</span>
+    <button class="pg" type="button" id="logUp">&#9650;</button>
+    <button class="pg" type="button" id="logDn">&#9660;</button>
+    <button class="pg wide" type="button" id="logClear">CLEAR</button></div>
+</div>
+</section>
+
+</div>
+
+<!-- ---------------------------------- annunciator foot ------------------------------ -->
+<div class="foot">
+<div class="foot-main">
+  <div class="statusbar">
+    <span class="st-lamp" id="stLamp"></span>
+    <span class="st-txt" id="stTxt">Standing by...</span>
+    <span class="spacer"></span>
+    <span class="tbcell">Refresh<b>1.0 s</b></span>
+    <span class="tbcell">Log cap<b>60</b></span>
+    <span class="tbcell clock">Site&nbsp;Time<b id="clock">--:--:--</b></span>
+  </div>
+  <div class="banner" id="banner"></div>
+</div>
+<div class="masterwrap">
+  <button class="master" type="button" id="btnLockAll">
+    <span class="m-hz"></span>
+    <span class="m-top">SITE</span>
+    <span class="m-big">LOCK</span>
+    <span class="m-big">DOWN</span>
+    <span class="m-sub" id="mSub">-</span>
+  </button>
+</div>
+</div>
+
+</div>
+
+<script src="client.js"></script>
+</body>
+</html>

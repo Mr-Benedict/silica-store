@@ -1,0 +1,14 @@
+{
+  "id": "02-lamp",
+  "title": "02 Lamp — Redstone Pulser",
+  "summary": "Redstone pulser: drives one face on and off forever, on a period you set",
+  "kind": "script",
+  "category": "starter",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "redstone"
+    ],
+    "parts": []
+  }
+}

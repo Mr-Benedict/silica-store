@@ -1,0 +1,16 @@
+{
+  "id": "counter",
+  "title": "Counter",
+  "summary": "The smallest complete Path-B app: a number, three buttons, and the whole web bridge in one screen",
+  "kind": "app",
+  "category": "example",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "web"
+    ],
+    "parts": [
+      "gpu"
+    ]
+  }
+}

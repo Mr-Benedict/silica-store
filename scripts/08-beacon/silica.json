@@ -1,0 +1,17 @@
+{
+  "id": "08-beacon",
+  "title": "08 Beacon — Computer to Computer",
+  "summary": "Two computers talking: heartbeats, a link light, and a beat count that survives a restart",
+  "kind": "script",
+  "category": "starter",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "fs",
+      "network"
+    ],
+    "parts": [
+      "nic"
+    ]
+  }
+}

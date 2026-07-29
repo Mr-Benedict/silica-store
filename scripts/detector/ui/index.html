@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perimeter Watch</title>
+<!-- style.css + client.js are siblings, inlined by the server bundler. -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ok:false — full-sheet placeholder shown instead of the board -->
+<div class="offsheet" id="offsheet"><div class="off-card">
+  <div class="off-mark">PRMTR<b>//</b>WATCH</div>
+  <div class="off-tag">No detector signal</div>
+  <div class="off-reason" id="offReason">Awaiting link...</div>
+  <div class="off-rule"></div>
+  <div class="off-foot">Perimeter watch board &middot; Silica Path B</div>
+</div></div>
+
+<div class="sheet">
+
+<div class="rule">
+  <div class="mark">PRMTR<b>//</b>WATCH</div>
+  <div class="tagline">Perimeter</div>
+  <div class="spacer"></div>
+  <div class="meta">
+    <span>OP&nbsp;<b id="op">-</b></span>
+    <span>UNITS&nbsp;<b id="devCount">-</b></span>
+    <span>CONTACTS&nbsp;<b id="hdrContacts">-</b></span>
+    <span class="link" id="link"><span class="dot"></span><span id="linkTxt">LINK LIVE</span></span>
+  </div>
+</div>
+
+<div class="board">
+
+<!-- ---------------------------------- WATCH (the radar) --------------------------------- -->
+<section class="node watch" id="nWatch">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">WCH</span><span class="n-name" id="uName">-</span>
+  <span class="n-state idle" id="uState"><span class="lamp"></span><span id="uStateTxt">-</span></span></div>
+<div class="chips" id="uChips"></div>
+<div class="n-body">
+  <div class="ph" id="uPh"><span>NO DETECTOR ON NET</span></div>
+  <div class="plot grow">
+    <div class="plbl">Sweep &middot; XZ</div><div class="pmeta" id="radarMeta">-</div>
+    <canvas id="radarC"></canvas>
+  </div>
+  <div class="tiles">
+    <div class="tile"><div class="t-l">Detected</div><div class="t-v" id="sTotal">-</div></div>
+    <div class="tile hos"><div class="t-l">Hostile</div><div class="t-v" id="sHostile">-</div></div>
+    <div class="tile fri"><div class="t-l">Friendly</div><div class="t-v" id="sFriendly">-</div></div>
+    <div class="tile ply"><div class="t-l">Players</div><div class="t-v" id="sPlayers">-</div></div>
+  </div>
+  <div class="tags">
+    <div class="tg"><span class="k">Nearest hostile</span><span class="v" id="tNearH">-</span></div>
+    <div class="tg"><span class="k">Nearest contact</span><span class="v" id="tNearA">-</span></div>
+    <div class="tg"><span class="k">Range</span><span class="v" id="tRange">-</span></div>
+    <div class="tg"><span class="k">OUT <i>derived</i></span><span class="v" id="tOut">-</span></div>
+  </div>
+  <!-- the selected unit's own config: four filter chips + a range stepper. Tap targets only — MCEF
+       forwards clicks, never a drag, so there is no thumb to grab anywhere on this sheet. -->
+  <div class="lower">
+    <div class="cb-head"><span>Filter</span><b id="tFilter">-</b></div>
+    <div class="filters" id="filters">
+      <button class="fg" type="button" data-f="mob"><i></i>Mob</button>
+      <button class="fg" type="button" data-f="player"><i></i>Player</button>
+      <button class="fg" type="button" data-f="friendly"><i></i>Friendly</button>
+      <button class="fg" type="button" data-f="enemy"><i></i>Enemy</button>
+    </div>
+    <div class="rangerow">
+      <span class="rk">Range</span>
+      <button class="sw tiny" type="button" id="rMinus">&minus;</button>
+      <div class="track tap" id="rTrack"><div class="fill" id="rFill"></div><div class="knob" id="rKnob"></div></div>
+      <button class="sw tiny" type="button" id="rPlus">+</button>
+      <b class="rv" id="rVal">-</b>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ---------------------------------- CONTACTS (the list) ------------------------------- -->
+<section class="node ctc" id="nList">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">CTC</span><span class="n-name">Contacts</span>
+  <span class="n-state idle" id="cState"><span class="lamp"></span><span id="cStateTxt">-</span></span></div>
+<div class="n-body">
+  <div class="ph" id="cPh"><span>NOTHING IN RANGE</span></div>
+  <div class="rowhead"><span>Contact</span><span class="c">Position</span><span class="c">Dist</span></div>
+  <div class="rows" id="rows"></div>
+  <div class="more" id="cMore"></div>
+  <div class="pager"><button class="pg" type="button" id="cUp">&#9650;</button>
+    <span class="pgpos" id="cPos">-</span>
+    <button class="pg" type="button" id="cDn">&#9660;</button></div>
+</div>
+</section>
+
+<!-- ---------------------------------- ALERT (the one thing that acts) ------------------- -->
+<section class="node alr" id="nAlert">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">ALR</span><span class="n-name">Alert</span>
+  <span class="n-state idle" id="aState"><span class="lamp"></span><span id="aStateTxt">-</span></span></div>
+<div class="n-body">
+  <div class="readrow">
+    <div class="read">
+      <div class="lbl">Trip state</div>
+      <div class="big"><b id="aBig">-</b></div>
+      <div class="sub"><span class="pip" id="aPip">HELD</span><span class="subtxt" id="aSub">-</span></div>
+    </div>
+    <div class="ring" id="aRing">
+      <svg viewBox="0 0 100 100"><circle class="rt" cx="50" cy="50" r="40"></circle>
+      <circle class="rv" cx="50" cy="50" r="40" stroke-dasharray="251.3" stroke-dashoffset="251.3"></circle></svg>
+      <div class="cap"><b id="aRingV">-</b><span>ring m</span></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="cb-head"><span>Trip ring</span><b id="dVal">-</b></div>
+    <div class="stepper">
+      <button class="sw tiny" type="button" id="dMinus">&minus;</button>
+      <button class="sw tiny ghost" type="button" id="dLabel">BLOCKS</button>
+      <button class="sw tiny" type="button" id="dPlus">+</button>
+    </div>
+  </div>
+  <div class="ctl three">
+    <button class="sw" type="button" id="btnTrip">WATCH: &mdash;</button>
+    <button class="sw" type="button" id="btnSide">FACE: &mdash;</button>
+    <button class="sw" type="button" id="btnBcast">BCAST: &mdash;</button>
+  </div>
+  <div class="tags">
+    <div class="tg"><span class="k">Armed</span><span class="v" id="tArmed">-</span></div>
+    <div class="tg"><span class="k">Line out</span><span class="v" id="tLine">-</span></div>
+    <div class="tg"><span class="k">Hold</span><span class="v" id="tHold">-</span></div>
+    <div class="tg"><span class="k">In ring</span><span class="v" id="tInRing">-</span></div>
+    <div class="tg"><span class="k">Fleet hostile</span><span class="v" id="tFleetHos">-</span></div>
+    <div class="tg"><span class="k">Blocks hot</span><span class="v" id="tHot">-</span></div>
+  </div>
+  <div class="faultline" id="faultLine">-</div>
+</div>
+</section>
+
+</div>
+
+<!-- ---------------------------------- annunciator foot ------------------------------ -->
+<div class="foot">
+<div class="foot-main">
+  <div class="statusbar">
+    <span class="st-lamp" id="stLamp"></span>
+    <span class="st-txt" id="stTxt">Standing by...</span>
+    <span class="spacer"></span>
+    <span class="tbcell">Sweep<b>1.0 s</b></span>
+    <span class="tbcell">Frame<b id="tbFrame">-</b></span>
+    <span class="tbcell clock">Sys&nbsp;Time<b id="clock">--:--:--</b></span>
+  </div>
+  <!-- entries WRAP, so both lists need real width. MCEF delivers no wheel and wall screens are
+       tap-only — hence the explicit page buttons. -->
+  <div class="annun">
+    <div class="ablock">
+      <div class="ab-head">Alarms <b id="alCount">0</b><span class="ab-pos" id="alPos">-</span></div>
+      <div class="alist" id="alarms"></div>
+      <div class="pager"><button class="pg" type="button" id="alUp">&#9650;</button><button class="pg" type="button" id="alDn">&#9660;</button></div>
+    </div>
+    <div class="ablock">
+      <div class="ab-head">Event log <b id="evCount">0</b><span class="ab-pos" id="evPos">-</span></div>
+      <div class="loglist" id="log"></div>
+      <div class="pager"><button class="pg" type="button" id="evUp">&#9650;</button><button class="pg" type="button" id="evDn">&#9660;</button></div>
+    </div>
+  </div>
+</div>
+<div class="masterwrap">
+  <button class="master" type="button" id="btnArm">
+    <span class="m-hz"></span>
+    <span class="m-top">PERIMETER</span>
+    <span class="m-big">ARM</span>
+    <span class="m-sub" id="mSub">-</span>
+  </button>
+  <button class="sw tiny ghost" type="button" id="btnClearLog">CLEAR LOG</button>
+</div>
+</div>
+
+</div>
+
+<script src="client.js"></script>
+</body>
+</html>

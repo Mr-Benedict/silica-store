@@ -1,0 +1,16 @@
+{
+  "id": "04-devices",
+  "title": "04 Devices — Network Browser",
+  "summary": "Network browser: every reachable device, its kind, its energy and its inventory, reprinted only when something changes",
+  "kind": "script",
+  "category": "starter",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "network"
+    ],
+    "parts": [
+      "nic"
+    ]
+  }
+}

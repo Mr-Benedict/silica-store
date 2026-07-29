@@ -1,0 +1,20 @@
+{
+  "id": "detector",
+  "title": "Detector — Perimeter Watch",
+  "summary": "Entity Detector watch board: a radar sweep, a contact list, and an armable redstone alert",
+  "kind": "app",
+  "category": "security",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "redstone",
+      "network",
+      "web",
+      "detector"
+    ],
+    "parts": [
+      "gpu",
+      "nic"
+    ]
+  }
+}

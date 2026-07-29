@@ -1,0 +1,21 @@
+{
+  "id": "rftp-grid",
+  "title": "RFTools Power Grid",
+  "summary": "RFTools Power grid monitor: network-wide energy and live flow, across dimensions",
+  "kind": "app",
+  "category": "energy",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "network",
+      "web"
+    ],
+    "parts": [
+      "gpu",
+      "nic"
+    ],
+    "mods": [
+      "rftoolspower"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "reactor-control",
+  "title": "Reactor Control",
+  "summary": "Mekanism fission control room: interlocks, burn presets, and the fuel and waste runway",
+  "kind": "app",
+  "category": "energy",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "network",
+      "web"
+    ],
+    "parts": [
+      "gpu",
+      "nic"
+    ],
+    "mods": [
+      "mekanism"
+    ]
+  }
+}

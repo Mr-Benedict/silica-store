@@ -1,0 +1,17 @@
+{
+  "id": "05-power",
+  "title": "05 Power — Energy Gauge and Alarm",
+  "summary": "Energy gauge and low-power alarm on a labelled device, with a hysteresis gap so a backup generator cannot chatter",
+  "kind": "script",
+  "category": "starter",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "redstone",
+      "network"
+    ],
+    "parts": [
+      "nic"
+    ]
+  }
+}

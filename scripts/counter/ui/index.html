@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Counter</title>
+  <!-- Sibling files, served over silica:// alongside this page. -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="card">
+    <h1>Counter</h1>
+    <div id="count" class="count">0</div>
+    <div class="row">
+      <button id="dec" class="btn" aria-label="decrement">&minus;</button>
+      <button id="reset" class="btn ghost">reset</button>
+      <button id="inc" class="btn" aria-label="increment">+</button>
+    </div>
+    <p id="who" class="who"></p>
+  </main>
+  <script src="client.js"></script>
+</body>
+</html>

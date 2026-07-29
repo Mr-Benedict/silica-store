@@ -1,0 +1,18 @@
+{
+  "id": "stock-display",
+  "title": "Stock Display",
+  "summary": "What is in any inventory on the Silica network, by name, with tag filters and a full slot inspector",
+  "kind": "app",
+  "category": "storage",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "network",
+      "web"
+    ],
+    "parts": [
+      "gpu",
+      "nic"
+    ]
+  }
+}

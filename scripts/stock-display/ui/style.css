@@ -1,0 +1,287 @@
+/* STOCK ROOM — a live inventory sheet. Sibling of the Perimeter Watch / Prospector's Survey / Reactor
+   Control boards: the same drafting language (near-black paper, warm ivory ink) with the stores-room
+   accents — teal = capacity in hand (the fill bar and the live link), amber = the warning (past 90 % full,
+   and the honest footnote when a slot cap cut the read short), cyan = the tag filter and the rows it
+   narrows, red = no signal. Each item row ALSO carries a hue of its own, hashed from the item id: CEF
+   cannot reach the game's texture atlas (a documented Path-B limit), so a row gets an honest generated
+   swatch rather than a fake sprite.
+   Fixed + non-scrolling (html/body overflow:hidden, grid/flex everywhere); every dimension in rem off ONE
+   viewport-derived root, so the sheet scales as a unit from a 512x384 wall screen to a full-window pocket
+   render. System fonts only, no assets, nothing to load, no external anything. */
+:root{
+  --paper:#080a0e;
+  --ink:#efe6d2;                 /* warm ivory — structure + labels */
+  --dim:rgba(239,230,210,.5);
+  --faint:rgba(239,230,210,.13);
+  --teal:#3fe0c2;                /* capacity in hand — the fill bar, the live link */
+  --amber:#f4b63b;               /* the warning — near full, and a read a cap cut short */
+  --cyan:#84cdff;                /* the tag filter and the rows it narrows */
+  --red:#ff5b49;                 /* no signal */
+  --stencil:"Bahnschrift","DIN Condensed","DIN Alternate","Haettenschweiler","Impact",system-ui,sans-serif;
+  --mono:"SFMono-Regular","Consolas","Roboto Mono",ui-monospace,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font:1rem/1.35 var(--mono);-webkit-user-select:none;user-select:none;}
+/* THE single scaling knob — and it has to come AFTER the `font:` shorthand above. `font:1rem/1.35` also
+   sets font-size, and on the ROOT element `1rem` resolves against font-size's INITIAL value (16px, CSS
+   Values 4 §5.1.1), so a clamp written before the shorthand is silently overridden and the sheet stops
+   scaling entirely — it then lays out at a 16px root and overflows a 512x384 wall screen. That is bug B10,
+   which shipped once already. */
+html{font-size:clamp(6.5px,1.9vmin,13.5px);}
+button{font-family:var(--mono);}
+ul{margin:0;padding:0;list-style:none;}
+/* one truncation utility — every label that can outgrow its cell clips with an ellipsis.
+   NOTE: .noteline and .off-reason are deliberately NOT here — a caveat you cannot finish reading is not
+   a caveat, and it is the one thing on this sheet that has to be read in full. */
+.tagline,.n-name,.subtxt,.tg .k,.tg .v,.t-l,.t-v,.t-s,.st-txt,.chip,.pgpos,.gval,.dwhere,.dname,.did,
+.read .lbl,.read .big b,.rowhead span,.crowhead span,.irow .nm-t,.irow .c,.tbcell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+/* one lamp, two sizes */
+.lamp,.dot{width:.62rem;height:.62rem;border-radius:50%;background:currentColor;box-shadow:0 0 .6rem currentColor;flex:none;}
+.n-state .lamp{width:.66rem;height:.66rem;}
+/* drafting grid + vignette */
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:
+  linear-gradient(rgba(239,230,210,.05) 1px,transparent 1px) 0 0/2.2rem 2.2rem,
+  linear-gradient(90deg,rgba(239,230,210,.05) 1px,transparent 1px) 0 0/2.2rem 2.2rem,
+  linear-gradient(rgba(239,230,210,.07) 1px,transparent 1px) 0 0/11rem 11rem,
+  linear-gradient(90deg,rgba(239,230,210,.07) 1px,transparent 1px) 0 0/11rem 11rem;}
+body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;background:radial-gradient(130% 110% at 50% 40%,transparent 55%,rgba(0,0,0,.6) 100%);}
+.sheet{position:relative;z-index:1;height:100%;display:grid;grid-template-rows:auto 1fr auto;gap:.65rem;padding:.9rem 1rem;min-height:0;}
+
+/* --- header rule --- */
+.rule{display:flex;align-items:flex-end;gap:1.1rem;border-bottom:1px solid var(--faint);padding-bottom:.55rem;min-width:0;}
+.mark{font-family:var(--stencil);font-size:1.75rem;line-height:.9;letter-spacing:.15rem;text-transform:uppercase;white-space:nowrap;}
+.mark b{color:var(--teal);font-weight:inherit;}
+.tagline{font-size:.78rem;letter-spacing:.22rem;text-transform:uppercase;color:var(--dim);}
+.spacer{flex:1;min-width:0;}
+.meta{display:flex;align-items:center;gap:1.2rem;font-size:.82rem;text-transform:uppercase;color:var(--dim);white-space:nowrap;}
+.meta b{color:var(--ink);letter-spacing:.14rem;}
+.link{display:flex;align-items:center;gap:.5rem;color:var(--teal);}
+.link .dot{animation:blink 1.6s ease-in-out infinite;}
+.link.down{color:var(--red);}
+.link.down .dot{animation:none;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* --- instrument board: a short STORES strip over the CONTENTS it describes.
+   Rows, not columns, on purpose. The stores card holds a fixed handful of numbers, so side by side it
+   would stretch to the contents card's height and sit nine-tenths empty on anything taller than a wall
+   screen; and the item list is the half that wants width — a modded item name is long, and full sheet
+   width is the difference between "Blazing Crystal Blo…" and reading it. --- */
+.board{min-height:0;min-width:0;overflow:hidden;display:grid;grid-template-rows:auto minmax(0,1fr);gap:.6rem;}
+.node{position:relative;display:flex;flex-direction:column;padding:.85rem .9rem;min-width:0;min-height:0;border:1px solid var(--faint);background:rgba(11,14,20,.92);box-shadow:0 2px 1.6rem rgba(0,0,0,.5);overflow:hidden;}
+.node.stk{--ac:var(--teal);}
+.node.cts{--ac:var(--cyan);}
+/* past 90 % the whole stores card changes key, ticks and all — and the contents card does the same thing
+   for the one condition that matters there: a component map the caps cut short */
+.node.stk.hot,.node.cts.hot{--ac:var(--amber);}
+/* corner ticks */
+.node::before,.node::after,.node .tr,.node .bl{content:"";position:absolute;width:1rem;height:1rem;pointer-events:none;z-index:3;border:0 solid var(--ac);}
+.node::before{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+.node::after{bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+.node .tr{top:-1px;right:-1px;border-width:2px 2px 0 0;}
+.node .bl{bottom:-1px;left:-1px;border-width:0 0 2px 2px;}
+.n-head{display:flex;align-items:baseline;gap:.65rem;border-bottom:1px dashed var(--faint);padding-bottom:.45rem;margin-bottom:.5rem;flex:none;min-width:0;}
+.n-tag{font-size:.8rem;color:var(--ac);border:1px solid var(--ac);padding:0 .4rem;border-radius:2px;flex:none;}
+.n-name{font-family:var(--stencil);font-size:1.35rem;letter-spacing:.1rem;text-transform:uppercase;flex:1;}
+.n-state{font-size:.76rem;letter-spacing:.12rem;text-transform:uppercase;display:flex;align-items:center;gap:.4rem;color:var(--dim);flex:none;}
+.n-state.run{color:var(--teal);}
+.n-state.list{color:var(--cyan);}
+.n-state.warn{color:var(--amber);}
+.n-state.warn .lamp{animation:blink 1.4s ease-in-out infinite;}
+.n-body{position:relative;flex:1;min-height:0;min-width:0;overflow:hidden;display:flex;flex-direction:column;gap:.5rem;}
+/* placeholder overlay inside a node body — it always says WHICH kind of empty this is */
+.ph{display:none;position:absolute;inset:0;z-index:5;align-items:center;justify-content:center;text-align:center;border:1px dashed var(--faint);background:rgba(8,10,14,.94);padding:.8rem;overflow:hidden;}
+.ph.on{display:flex;}
+.ph span{font-size:.85rem;letter-spacing:.16rem;text-transform:uppercase;color:var(--dim);}
+/* two panes in the contents card, never both: the item list, and the per-slot inspector. A swap rather
+   than a card that appears, because the sheet is fixed — a new card would have to take its height from
+   something, and everything here is already earning its rows. */
+.pane{display:none;position:relative;flex:1 1 auto;min-height:0;min-width:0;flex-direction:column;gap:.5rem;}
+.pane.on{display:flex;}
+
+/* the stores strip is two stacked columns — the reading and its bar on the left, the numbers behind it
+   on the right — and the caveat, when there is one, runs the full width underneath both */
+.node.stk .n-body{flex:none;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:.5rem .9rem;align-items:center;}
+.scol{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:.5rem;}
+
+/* --- hero readout --- */
+.read{min-width:0;overflow:hidden;}
+.read .lbl{font-size:.72rem;letter-spacing:.16rem;text-transform:uppercase;color:var(--dim);}
+.read .big{display:flex;align-items:baseline;gap:.5rem;min-width:0;}
+.read .big b{font-family:var(--stencil);font-size:2.9rem;line-height:.98;color:var(--ink);font-weight:400;}
+.read .unit{font-size:.82rem;color:var(--dim);flex:none;}
+.read .sub{display:flex;align-items:center;gap:.45rem;margin-top:.15rem;min-width:0;}
+.subtxt{font-size:.75rem;letter-spacing:.1rem;text-transform:uppercase;color:var(--dim);}
+.pip{font-size:.68rem;letter-spacing:.12rem;border:1px solid var(--faint);color:rgba(239,230,210,.28);padding:0 .32rem;border-radius:2px;flex:none;}
+.pip.on{color:var(--amber);border-color:var(--amber);box-shadow:0 0 .6rem rgba(244,182,59,.35);animation:blink 1.5s ease-in-out infinite;}
+
+/* --- the fill bar: used / slots, straight off items.summary(). Teal, amber past 90 %.
+       The decade ticks are drawn over the bar rather than under it, so the scale stays readable at both
+       ends of the rem range instead of vanishing under the fill. --- */
+.gauge{display:flex;align-items:center;gap:.6rem;flex:none;min-width:0;}
+.track{position:relative;flex:1 1 auto;min-width:0;height:.95rem;border:1px solid var(--faint);background:rgba(6,8,12,.65);overflow:hidden;}
+.fill{height:100%;width:0;background:linear-gradient(90deg,rgba(63,224,194,.28),var(--teal));transition:width .25s linear;}
+.fill.hot{background:linear-gradient(90deg,rgba(244,182,59,.28),var(--amber));}
+.track::after{content:"";position:absolute;inset:0;pointer-events:none;background:
+  repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(239,230,210,.18) calc(10% - 1px) 10%);}
+.gval{flex:none;font-size:.72rem;letter-spacing:.08rem;text-transform:uppercase;color:var(--dim);text-align:right;}
+
+/* --- tiles (the four numbers the stores card exists for) --- */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.3rem;flex:none;}
+.tile{border:1px solid var(--faint);border-top:2px solid var(--ac);padding:.26rem .38rem;min-width:0;background:rgba(6,8,12,.55);}
+.t-l{font-size:.63rem;letter-spacing:.08rem;text-transform:uppercase;color:var(--dim);}
+.t-v{font-family:var(--stencil);font-size:1.25rem;line-height:1.05;}
+.t-v.up{color:var(--teal);}
+.t-v.warm{color:var(--amber);}
+.t-s{font-size:.6rem;text-transform:uppercase;color:var(--dim);}
+.tile.list{border-top-color:var(--cyan);}
+
+/* --- tag readouts --- */
+.tags{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.24rem .8rem;flex:none;}
+.tg{display:flex;justify-content:space-between;gap:.5rem;border-bottom:1px dotted var(--faint);padding-bottom:.12rem;min-width:0;}
+.tg .k{font-size:.7rem;text-transform:uppercase;color:var(--dim);}
+.tg .v{font-size:.78rem;text-align:right;}
+.tg .v.warm{color:var(--amber);}
+.tg .v.list{color:var(--cyan);}
+
+/* the caveat: hidden outright while there isn't one, so the strip never carries a reserved empty row */
+.noteline{display:none;grid-column:1/-1;font-size:.68rem;line-height:1.25;color:var(--amber);border-left:2px solid var(--amber);padding:.1rem .35rem;min-width:0;white-space:normal;}
+.noteline.on{display:block;}
+
+/* --- the tag filter: chips, and only chips ---------------------------------------------------------
+   A wall screen forwards mouse press and release and NOTHING else — no wheel, no drag, no keys — so a
+   typed filter would be unreachable on the surface this board is built for. The chips are derived from
+   the tags the contents actually carry (no item ids anywhere in this app), they sit in the card whose
+   rows they narrow, and tapping the lit one clears the filter: if you can see a chip lit, something is
+   being hidden from you, and the same tap is the way back. */
+.chips{display:flex;flex-wrap:wrap;gap:.28rem;flex:none;overflow:hidden;}
+.chip{cursor:pointer;background:transparent;border:1px solid var(--faint);color:var(--dim);font-family:var(--mono);font-size:.72rem;line-height:1.25;letter-spacing:.04rem;text-transform:uppercase;padding:.16rem .45rem;border-radius:2px;max-width:9rem;}
+.chip:hover{border-color:var(--ac);color:var(--ink);}
+.chip.on{border-color:var(--ac);color:var(--ac);background:rgba(132,205,255,.11);}
+.chip:active{transform:translateY(1px);}
+
+/* --- the contents list. Each row carries a share bar behind its text, scaled against the largest total
+   on the board, so the shape of what is stored here reads before any of the numbers do. The bar is a
+   second reading of `count` and nothing else — it is drawn behind the row, never in a column of its
+   own, because the row has exactly two things to say and a third column would crowd both. --- */
+.rowhead,.irow{display:grid;grid-template-columns:minmax(0,1fr) minmax(4rem,9rem);gap:.4rem;align-items:center;}
+.rowhead{flex:none;font-size:.62rem;letter-spacing:.08rem;text-transform:uppercase;color:var(--dim);border-bottom:1px dashed var(--faint);padding:0 .2rem .15rem;}
+.rowhead .c,.irow .c{text-align:right;}
+.rows{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:.06rem;}
+.rows::-webkit-scrollbar{width:.42rem;}
+.rows::-webkit-scrollbar-thumb{background:var(--faint);}
+.irow{position:relative;flex:none;padding:.12rem .3rem;min-width:0;overflow:hidden;cursor:pointer;}
+.irow:hover{box-shadow:inset 0 0 0 1px var(--ac);}
+.irow:active{transform:translateY(1px);}
+.irow:nth-child(odd){background:rgba(239,230,210,.03);}
+.irow i{position:absolute;inset:0 auto 0 0;z-index:0;background:rgba(132,205,255,.1);border-right:1px solid rgba(132,205,255,.22);}
+.irow .nm,.irow .c{position:relative;z-index:1;}
+.irow .nm{display:flex;align-items:center;gap:.4rem;min-width:0;}
+.irow .nm-t{font-size:.76rem;}
+.irow .c{font-size:.78rem;color:var(--cyan);}
+/* the generated swatch: `color` carries the item's hashed hue and the border, the initials and the glow
+   all take it from currentColor, so one style write per row repaints the whole tile */
+.sw-tile{flex:none;display:flex;align-items:center;justify-content:center;width:1.55rem;height:1.55rem;
+  border:1px solid currentColor;border-radius:2px;font-size:.68rem;letter-spacing:.04rem;line-height:1;
+  color:var(--dim);}
+.sw-tile.lg{width:2.6rem;height:2.6rem;font-size:1.05rem;}
+
+/* --- the per-slot inspector: items.detail(slot) -----------------------------------------------------
+   The one place this app spends a faculty call, and the one place a player can watch the component cap
+   chain fire. Everything here is chips and pagers for the same reason as the list: a wall screen forwards
+   mouse press and release and nothing else, so there is no tree to expand, no wheel to scroll and no key
+   to press — the nesting is flattened to dot paths on the server and paged with the same two buttons. */
+.detbar{display:flex;align-items:center;gap:.35rem;flex:none;min-width:0;}
+.detbar .pg{padding:.24rem .5rem;}
+.detbar .back{color:var(--ac);border-color:var(--ac);letter-spacing:.1rem;}
+.dwhere{font-family:var(--stencil);font-size:1rem;letter-spacing:.14rem;text-transform:uppercase;color:var(--dim);flex:none;}
+.dwrap{position:relative;flex:1 1 auto;min-height:0;min-width:0;display:flex;flex-direction:column;gap:.5rem;}
+
+.dhero{display:flex;align-items:center;gap:.6rem;flex:none;min-width:0;}
+.dn{min-width:0;flex:1;}
+.dname{font-family:var(--stencil);font-size:1.3rem;line-height:1.05;letter-spacing:.06rem;}
+.did{font-size:.68rem;color:var(--dim);}
+/* the truncation badge — a distinct state, not a field. It blinks, and .node.cts.hot takes the whole card
+   amber with it, so a player who lowers itemComponentMaxNodes and re-opens a card sees the difference
+   without reading a word. */
+.trunc{display:none;align-items:center;flex:none;font-size:.68rem;letter-spacing:.14rem;padding:.1rem .4rem;border-radius:2px;
+  color:var(--amber);border:1px solid var(--amber);background:rgba(244,182,59,.12);box-shadow:0 0 .7rem rgba(244,182,59,.35);
+  animation:blink 1.3s ease-in-out infinite;}
+.trunc.on{display:inline-flex;}
+
+/* the flattened record: tag rows and dot-path component rows under their own section marks. Both cells
+   WRAP rather than ellipsing — a component path you cannot finish reading is not a path, and there is no
+   tooltip to fall back on on a wall screen. */
+.crowhead,.crow{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:.5rem;align-items:baseline;}
+.crowhead{flex:none;font-size:.62rem;letter-spacing:.08rem;text-transform:uppercase;color:var(--dim);border-bottom:1px dashed var(--faint);padding:0 .2rem .15rem;}
+.crow{flex:none;padding:.1rem .3rem;min-width:0;}
+.crow:nth-child(odd){background:rgba(239,230,210,.03);}
+.crow .k{font-size:.72rem;color:var(--dim);overflow-wrap:anywhere;}
+.crow .v{font-size:.74rem;color:var(--ac);overflow-wrap:anywhere;}
+.crow.sect{display:block;background:none;border-bottom:1px dotted var(--faint);padding:.34rem .3rem .1rem;
+  font-size:.62rem;letter-spacing:.16rem;text-transform:uppercase;color:var(--ac);}
+.crow.sect:first-child{padding-top:0;}
+
+/* the no-record states — empty slot, refused slot, device gone, a totals row with no slot, and the tick
+   between the tap and the answer. It covers the record and NOT the bar above it, so BACK always works. */
+.dstate{display:none;position:absolute;inset:0;z-index:6;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;gap:.6rem;border:1px dashed var(--faint);background:rgba(8,10,14,.96);padding:1rem;overflow:hidden;}
+.dstate.on{display:flex;}
+.dstate .h{font-family:var(--stencil);font-size:1.5rem;letter-spacing:.18rem;text-transform:uppercase;color:var(--ac);}
+/* deliberately NOT in the truncation utility, like .noteline and .off-reason: this is a reason, and a
+   reason you cannot finish reading is not one */
+.dstate .r{font-size:.76rem;line-height:1.45;color:var(--dim);max-width:34rem;white-space:normal;}
+
+/* page buttons: the only reliable way to reach a row that has scrolled out of sight (no wheel through
+   MCEF, tap-only walls). The middle cell is the "first visible / total" mark. */
+.pager{display:grid;grid-template-columns:1fr auto 1fr;gap:.25rem;align-items:center;flex:none;}
+.pg{cursor:pointer;font-family:var(--mono);font-size:.7rem;line-height:1;color:var(--ink);background:rgba(6,8,12,.6);border:1px solid var(--faint);border-radius:2px;padding:.26rem 0;}
+.pg:hover:not(:disabled){border-color:var(--ac);color:var(--ac);}
+.pg:active:not(:disabled){background:var(--faint);transform:translateY(1px);}
+.pg:disabled{opacity:.3;cursor:default;}
+.pgpos{font-size:.64rem;color:var(--dim);text-align:center;padding:0 .5rem;}
+
+/* --- status foot --- */
+.foot{flex:none;min-width:0;}
+.statusbar{display:flex;align-items:center;gap:.55rem;border:1px solid var(--faint);padding:.25rem .55rem;background:rgba(6,8,12,.6);min-width:0;}
+.st-lamp{width:.6rem;height:.6rem;border-radius:50%;background:var(--dim);flex:none;}
+.st-lamp.ok{background:var(--teal);box-shadow:0 0 .6rem var(--teal);}
+.st-lamp.warn{background:var(--amber);box-shadow:0 0 .6rem var(--amber);}
+.st-lamp.err{background:var(--red);box-shadow:0 0 .6rem var(--red);}
+.st-txt{font-size:.82rem;flex:0 1 auto;}
+.st-txt.warn{color:var(--amber);}
+.st-txt.err{color:#ffb3aa;}
+.tbcell{font-size:.66rem;letter-spacing:.12rem;text-transform:uppercase;color:var(--dim);border-left:1px solid var(--faint);padding-left:.6rem;margin-left:.2rem;white-space:nowrap;flex:none;}
+.tbcell b{color:var(--ink);margin-left:.35rem;font-size:.78rem;}
+.tbcell.clock b{color:var(--teal);}
+
+/* --- ok:false sheet — the reason card, shown instead of the board and never over a stale one --- */
+.offsheet{display:none;position:fixed;inset:0;z-index:80;align-items:center;justify-content:center;padding:2rem;background:var(--paper);}
+.offsheet.on{display:flex;}
+.off-card{max-width:44rem;width:100%;border:1px solid var(--faint);border-top:2px solid var(--amber);padding:2rem 2.2rem;background:rgba(11,14,20,.92);background-image:repeating-linear-gradient(45deg,rgba(239,230,210,.035) 0 .8rem,transparent .8rem 1.6rem);}
+.off-mark{font-family:var(--stencil);font-size:2.4rem;line-height:.9;letter-spacing:.2rem;text-transform:uppercase;}
+/* amber here, teal in the header rule: the board's mark says "capacity", this one says "attention" */
+.off-mark b{color:var(--amber);font-weight:inherit;}
+.off-tag{font-size:.82rem;letter-spacing:.3rem;text-transform:uppercase;color:var(--red);margin-top:.5rem;}
+.off-reason{line-height:1.5;color:var(--dim);margin-top:1.1rem;max-height:9rem;overflow:hidden;}
+.off-rule{height:1px;background:var(--faint);margin:1.2rem 0 .7rem;}
+.off-foot{font-size:.7rem;letter-spacing:.2rem;text-transform:uppercase;color:rgba(239,230,210,.3);}
+
+/* very short surfaces (a 512x384 wall screen): give the board every pixel we can spare. */
+@media (max-height:400px){
+  .sheet{padding:.6rem .7rem;gap:.45rem;}
+  .mark{font-size:1.45rem;}
+  .read .big b{font-size:2.3rem;}
+  /* at 512px the card head is a three-way fight and the STK/CTS tag is pure decoration; giving its width
+     back to the name is the difference between "COBBLE…" and a readable inventory label */
+  .n-tag{display:none;}
+  .n-name{font-size:1.15rem;}
+  .n-state{font-size:.72rem;}
+  .t-s{display:none;}          /* the tile sublabels are the cheapest rows to give the list */
+  .chip{font-size:.68rem;padding:.12rem .38rem;}
+  .sw-tile{width:1.35rem;height:1.35rem;}
+  /* the inspector gives up the same decoration the list does, so its paged rows keep their share */
+  .sw-tile.lg{width:2.1rem;height:2.1rem;font-size:.9rem;}
+  .dname{font-size:1.1rem;}
+  .dwhere{font-size:.88rem;}
+  .dstate .h{font-size:1.2rem;}
+}

@@ -1,0 +1,19 @@
+{
+  "id": "ejector",
+  "title": "Ejector",
+  "summary": "Item Ejector board: buffer contents, filter, and a manual eject button",
+  "kind": "app",
+  "category": "automation",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "network",
+      "web",
+      "ejector"
+    ],
+    "parts": [
+      "gpu",
+      "nic"
+    ]
+  }
+}

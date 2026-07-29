@@ -1,0 +1,21 @@
+{
+  "id": "rs-terminal",
+  "title": "Refined Storage Terminal",
+  "summary": "Refined Storage grid terminal: items, fluids and crafting tasks",
+  "kind": "app",
+  "category": "storage",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "network",
+      "web"
+    ],
+    "parts": [
+      "gpu",
+      "nic"
+    ],
+    "mods": [
+      "refinedstorage"
+    ]
+  }
+}

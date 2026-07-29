@@ -1,0 +1,18 @@
+{
+  "id": "07-alarm",
+  "title": "07 Alarm — Proximity Alarm",
+  "summary": "Proximity alarm: watches an Entity Detector and holds a redstone face live while something is inside your trip distance",
+  "kind": "script",
+  "category": "starter",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "redstone",
+      "network",
+      "detector"
+    ],
+    "parts": [
+      "nic"
+    ]
+  }
+}

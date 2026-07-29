@@ -1,0 +1,21 @@
+{
+  "id": "builder-control",
+  "title": "Builder Control",
+  "summary": "RFTools Builder control room: quarry and shape status, progress and yield, and the controls to run it",
+  "kind": "app",
+  "category": "automation",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "network",
+      "web"
+    ],
+    "parts": [
+      "gpu",
+      "nic"
+    ],
+    "mods": [
+      "rftoolsbuilder"
+    ]
+  }
+}

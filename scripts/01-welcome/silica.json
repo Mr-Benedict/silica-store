@@ -1,0 +1,12 @@
+{
+  "id": "01-welcome",
+  "title": "01 Welcome — Self-Test",
+  "summary": "Self-test: which capability doors are open, which part each closed one wants, what is on the network, and what to run next",
+  "kind": "script",
+  "category": "starter",
+  "author": "Silica",
+  "needs": {
+    "doors": [],
+    "parts": []
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "id": "06-mover",
+  "title": "06 Mover — Item Shuttle",
+  "summary": "Moves items between two labelled devices, on a timer or on a redstone pulse, with an optional item filter",
+  "kind": "script",
+  "category": "starter",
+  "author": "Silica",
+  "needs": {
+    "doors": [
+      "redstone",
+      "network"
+    ],
+    "parts": [
+      "nic"
+    ]
+  }
+}

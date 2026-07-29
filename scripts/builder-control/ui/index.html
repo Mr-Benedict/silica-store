@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Excavation Control Room</title>
+<!-- style.css + client.js are siblings, inlined by the server bundler. -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ok:false — full-sheet placeholder shown instead of the board -->
+<div class="offsheet" id="offsheet"><div class="off-card">
+  <div class="off-mark">QRRY<b>//</b>CTRL</div>
+  <div class="off-tag">No excavation signal</div>
+  <div class="off-reason" id="offReason">Awaiting link...</div>
+  <div class="off-rule"></div>
+  <div class="off-foot">Excavation control room &middot; Silica Path B</div>
+</div></div>
+
+<div class="sheet">
+
+<div class="rule">
+  <div class="mark">QRRY<b>//</b>CTRL</div>
+  <div class="tagline">Excavation&nbsp;Control</div>
+  <div class="spacer"></div>
+  <div class="meta">
+    <span>OP&nbsp;<b id="op">-</b></span>
+    <span>UNITS&nbsp;<b id="devCount">-</b></span>
+    <span class="link" id="link"><span class="dot"></span><span id="linkTxt">LINK LIVE</span></span>
+  </div>
+</div>
+
+<div class="board">
+
+<!-- ---------------------------------- UNIT (mechanical) ---------------------------- -->
+<section class="node mech" id="nUnit">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">BLD</span><span class="n-name" id="uName">-</span>
+  <span class="n-state idle" id="uState"><span class="lamp"></span><span id="uStateTxt">-</span></span></div>
+<div class="chips" id="uChips"></div>
+<div class="n-body">
+  <div class="ph" id="uPh"><span>NO RFTOOLS BUILDER ON NET</span></div>
+  <div class="readrow">
+    <div class="read">
+      <div class="lbl">Excavation progress</div>
+      <div class="big"><b id="uProg">-</b><span class="unit">%</span><span class="trend" id="uTrend"></span></div>
+      <div class="sub"><span class="pip" id="uPip">CUTTING</span><span class="subtxt" id="uNote">-</span></div>
+    </div>
+    <div class="ring" id="uRing">
+      <svg viewBox="0 0 100 100"><circle class="rt" cx="50" cy="50" r="40"></circle>
+      <circle class="rv" cx="50" cy="50" r="40" stroke-dasharray="251.3" stroke-dashoffset="251.3"></circle></svg>
+      <div class="cap"><b id="uRingV">-</b><span id="uRingL">layers left</span></div>
+    </div>
+  </div>
+  <div class="levels">
+    <div class="lv"><span class="lt">Layers</span><div class="track"><div class="fill" id="fLayers"></div></div><span class="pv" id="pLayers">-</span><span class="val" id="vLayers">-</span></div>
+    <div class="lv"><span class="lt">Volume</span><div class="track"><div class="fill" id="fVol"></div></div><span class="pv" id="pVol">-</span><span class="val" id="vVol">-</span></div>
+  </div>
+  <div class="tags">
+    <div class="tg"><span class="k">Y level</span><span class="v" id="tY">-</span></div>
+    <div class="tg"><span class="k">Layers</span><span class="v" id="tLayers">-</span></div>
+    <div class="tg"><span class="k">Left</span><span class="v" id="tLeft">-</span></div>
+    <div class="tg"><span class="k">Per layer</span><span class="v" id="tPerLayer">-</span></div>
+    <div class="tg"><span class="k">Card</span><span class="v" id="tCard">-</span></div>
+    <div class="tg"><span class="k">Space mode</span><span class="v" id="tSpace">-</span></div>
+    <div class="tg"><span class="k">Stalled</span><span class="v" id="tStall">-</span></div>
+    <div class="tg"><span class="k">Last error</span><span class="v" id="tErr">-</span></div>
+  </div>
+  <div class="runway">
+    <div class="rw"><div class="rw-l">Excavation ETA</div><div class="rw-v" id="wEta">-</div></div>
+    <div class="rw"><div class="rw-l">Layer time</div><div class="rw-v" id="wLayer">-</div></div>
+    <div class="rw"><div class="rw-l">Power runway</div><div class="rw-v" id="wPower">-</div></div>
+  </div>
+</div>
+<div class="ctl">
+  <button class="sw go" type="button" id="btnStart">START</button>
+  <button class="sw stop" type="button" id="btnStop">STOP</button>
+  <button class="sw" type="button" id="btnRestart">RESTART</button>
+</div>
+</section>
+
+<!-- ---------------------------------- SURVEY (plots) ------------------------------- -->
+<section class="node mech" id="nSurvey">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">SRV</span><span class="n-name">Survey</span>
+  <span class="n-state idle" id="sState"><span class="lamp"></span><span id="sStateTxt">-</span></span></div>
+<div class="n-body">
+  <div class="ph" id="sPh"><span>NO WORK REGION</span></div>
+  <div class="plots">
+    <div class="plot">
+      <div class="plbl">Plan &middot; XZ</div><div class="pmeta" id="planMeta">-</div>
+      <canvas id="planC"></canvas>
+    </div>
+    <div class="plot">
+      <div class="plbl">Section &middot; Y</div><div class="pmeta" id="secMeta">-</div>
+      <canvas id="secC"></canvas>
+    </div>
+  </div>
+  <div class="tags">
+    <div class="tg"><span class="k">Min</span><span class="v" id="qMin">-</span></div>
+    <div class="tg"><span class="k">Max</span><span class="v" id="qMax">-</span></div>
+    <div class="tg"><span class="k">W&times;H&times;D</span><span class="v" id="qSize">-</span></div>
+    <div class="tg"><span class="k">Volume</span><span class="v" id="qVol">-</span></div>
+    <div class="tg"><span class="k">Scan</span><span class="v" id="qScan">-</span></div>
+    <div class="tg"><span class="k">Builder</span><span class="v" id="qPos">-</span></div>
+    <div class="tg"><span class="k">Offset</span><span class="v" id="qOff">-</span></div>
+    <div class="tg"><span class="k">Dimension</span><span class="v" id="qDim">-</span></div>
+  </div>
+  <div class="flaggrid" id="flags">
+    <button class="fg" type="button" data-f="silent"><i></i>Silent</button>
+    <button class="fg" type="button" data-f="support"><i></i>Support</button>
+    <button class="fg" type="button" data-f="entity"><i></i>Entity</button>
+    <button class="fg" type="button" data-f="loop"><i></i>Loop</button>
+    <button class="fg" type="button" data-f="wait"><i></i>Wait</button>
+    <button class="fg" type="button" data-f="hilight"><i></i>Hilight</button>
+  </div>
+</div>
+<div class="ctl"><button class="sw" type="button" id="btnRs">RS: &mdash;</button></div>
+</section>
+
+<!-- ------------------------------- FLEET BUS + POWER ------------------------------- -->
+<div class="col">
+
+<section class="node bus grow" id="nBus">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">BUS</span><span class="n-name">Quarry Fleet</span>
+  <span class="n-state idle" id="bState"><span class="lamp"></span><span id="bStateTxt">-</span></span></div>
+<div class="n-body">
+  <div class="tiles">
+    <div class="tile"><div class="t-l">Running</div><div class="t-v" id="bUnits">-</div><div class="t-s" id="bUnitsSub">-</div></div>
+    <div class="tile"><div class="t-l">Avg prog</div><div class="t-v" id="bProg">-</div><div class="t-s">mean</div></div>
+    <div class="tile"><div class="t-l">Fleet ETA</div><div class="t-v" id="bEta">-</div><div class="t-s">slowest</div></div>
+    <div class="tile"><div class="t-l">Fleet net</div><div class="t-v" id="bNet">-</div><div class="t-s">FE/t</div></div>
+  </div>
+  <div class="track wide"><div class="fill" id="fFleet"></div></div>
+  <div class="tags two">
+    <div class="tg"><span class="k">Fleet buffer</span><span class="v" id="bBuf">-</span></div>
+    <div class="tg"><span class="k">Stored</span><span class="v" id="bStored">-</span></div>
+  </div>
+  <div class="recorder">
+    <div class="rlbl">Strip recorder</div>
+    <div class="rleg"><i class="a"></i>PROG&nbsp;%<i class="t"></i>NET&nbsp;FE/t</div>
+    <canvas id="chart"></canvas>
+  </div>
+</div>
+</section>
+
+<section class="node elec" id="nPower">
+<span class="tr"></span><span class="bl"></span>
+<div class="n-head"><span class="n-tag">PWR</span><span class="n-name" id="pName">Unit power</span>
+  <span class="n-state idle" id="pState"><span class="lamp"></span><span id="pStateTxt">-</span></span></div>
+<div class="n-body">
+  <div class="ph" id="pPh"><span>NO POWER READING</span></div>
+  <div class="panel">
+    <div class="cb-head"><span>Buffer</span><b id="pPct">-</b></div>
+    <div class="track wide"><div class="fill" id="fBuf"></div></div>
+    <div class="netline" id="netLine"><span class="lamp"></span><span id="netTxt">-</span></div>
+    <div class="tags two">
+      <div class="tg"><span class="k">Stored</span><span class="v" id="pStored">-</span></div>
+      <div class="tg"><span class="k">Net</span><span class="v" id="pNet">-</span></div>
+      <div class="tg"><span class="k" id="pRunL">Empty in</span><span class="v" id="pRunV">-</span></div>
+      <div class="tg"><span class="k">Fleet draw</span><span class="v" id="pFleet">-</span></div>
+    </div>
+  </div>
+</div>
+</section>
+
+</div>
+</div>
+
+<!-- ---------------------------------- annunciator foot ------------------------------ -->
+<div class="foot">
+<div class="foot-main">
+  <div class="statusbar">
+    <span class="st-lamp" id="stLamp"></span>
+    <span class="st-txt" id="stTxt">Standing by...</span>
+    <span class="spacer"></span>
+    <span class="tbcell">Refresh<b>1.0 s</b></span>
+    <span class="tbcell">Frame<b id="tbFrame">-</b></span>
+    <span class="tbcell clock">Sys&nbsp;Time<b id="clock">--:--:--</b></span>
+  </div>
+  <!-- two columns since the supervisor went: entries WRAP, so both lists need the width.
+       MCEF delivers no wheel and wall screens are tap-only — hence the explicit page buttons. -->
+  <div class="annun">
+    <div class="ablock">
+      <div class="ab-head">Alarms <b id="alCount">0</b><span class="ab-pos" id="alPos">-</span></div>
+      <div class="alist" id="alarms"></div>
+      <div class="pager"><button class="pg" type="button" id="alUp">&#9650;</button><button class="pg" type="button" id="alDn">&#9660;</button></div>
+    </div>
+    <div class="ablock">
+      <div class="ab-head">Event log <b id="evCount">0</b><span class="ab-pos" id="evPos">-</span></div>
+      <div class="loglist" id="log"></div>
+      <div class="pager"><button class="pg" type="button" id="evUp">&#9650;</button><button class="pg" type="button" id="evDn">&#9660;</button></div>
+    </div>
+  </div>
+</div>
+<div class="masterwrap">
+  <button class="master" type="button" id="btnStopAll">
+    <span class="m-hz"></span>
+    <span class="m-top">EMERGENCY</span>
+    <span class="m-big">STOP</span>
+    <span class="m-big">ALL</span>
+    <span class="m-sub" id="mSub">-</span>
+  </button>
+  <button class="sw tiny ghost" type="button" id="btnStartAll">START ALL</button>
+</div>
+</div>
+
+</div>
+
+<script src="client.js"></script>
+</body>
+</html>
