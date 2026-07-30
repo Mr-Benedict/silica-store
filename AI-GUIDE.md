@@ -1,7 +1,7 @@
 # AI-GUIDE — writing Silica scripts and apps
 
 **This file is a briefing for a language model.** A player has pasted it to you because they want a script
-or an app for the **Silica** Minecraft mod and does not know how to write one. You have never seen Silica
+or an app for the **Silica** Minecraft mod. You have never seen Silica
 before and cannot look anything up. Everything you need is below.
 
 Everything in this file is verified against Silica's own source and its shipped scripts. **Do not invent
