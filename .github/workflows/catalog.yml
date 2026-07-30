@@ -53,8 +53,11 @@ jobs:
             echo "index.json is unchanged; nothing to commit."
             exit 0
           fi
-          git config user.name  'silica-store-bot'
-          git config user.email 'silica-store-bot@users.noreply.github.com'
+          # Commit as the repository owner, not as a bot identity: a distinct bot author would show up
+          # as a second entry in the contributor list the first time a merged PR changed the catalog.
+          # This is the owner's own automation regenerating a generated file on their behalf.
+          git config user.name  'Mr-Benedict'
+          git config user.email 'info@benware.io'
           git add index.json
           git commit -m 'ci: regenerate index.json [skip ci]'
           git push
